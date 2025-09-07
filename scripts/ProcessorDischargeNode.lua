@@ -205,7 +205,7 @@ function ProcessorDischargeNode:setDischargeEffectActive(isActive, force, fillTy
                 fillTypeIndex = self.processor:getFillUnitFillTypeIndex(self.fillUnitIndex)
             end
 
-            g_effectManager:setFillType(self.effects, fillTypeIndex)
+            g_effectManager:setEffectTypeInfo(self.effects, fillTypeIndex)
             g_effectManager:startEffects(self.effects)
             g_animationManager:startAnimations(self.animationNodes)
 
