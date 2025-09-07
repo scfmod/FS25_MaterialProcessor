@@ -1,6 +1,3 @@
----@diagnostic disable-next-line: lowercase-global
-g_materialProcessorUIFilename = g_currentModDirectory .. 'textures/ui_elements.png'
-
 ---@param path string
 local function load(path)
     source(g_currentModDirectory .. 'scripts/' .. path)
@@ -38,7 +35,6 @@ load('gui/dialogs/ProcessorConfigurationDialog.lua')
 load('hud/ProcessorHUD.lua')
 
 -- Base game extensions
-load('extensions/GuiOverlayExtension.lua')
 load('extensions/InteractiveControlExtension.lua')
 
 ---@diagnostic disable-next-line: lowercase-global
