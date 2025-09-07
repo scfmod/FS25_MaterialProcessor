@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="97">
+    <author>scfmod</author>
+    <version>1.0.0.0</version>
+    <title>
+        <en>Material Processor</en>
+    </title>
+    <description>
+        <en><![CDATA[Material Processor vehicle specialization.]]></en>
+    </description>
+    <iconFilename>icon_materialProcessor.dds</iconFilename>
+    <multiplayer supported="true" />
+
+    <extraSourceFiles>
+        <sourceFile filename="scripts/main.lua" />
+    </extraSourceFiles>
+
+    <specializations>
+        <specialization name="materialProcessor" className="MaterialProcessor" filename="scripts/specializations/MaterialProcessor.lua" />
+    </specializations>
+
+    <actions>
+        <action name="SELECT_CONFIGURATION" />
+    </actions>
+
+    <actionBinding action="SELECT_CONFIGURATION">
+        <binding device="KB_MOUSE_DEFAULT" input="KEY_k" axisComponent="+" neutralInput="0" index="1" />
+        <binding device="0_XINPUT_GAMEPAD" input="BUTTON_6 BUTTON_4" axisComponent="+" neutralInput="0" index="1" />
+    </actionBinding>
+
+    <l10n filenamePrefix="l10n/l10n" />
+</modDesc>

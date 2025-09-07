@@ -1,0 +1,32 @@
+{
+    "archive": {
+        "targetFile": "build/FS25_0_MaterialProcessor.zip",
+        "extensions": [
+            "xml",
+            "dds",
+            "lua"
+        ],
+        "exclude": [
+            ".git/",
+            ".vscode/",
+            "build/",
+            "docs/",
+            "scripts/types.lua",
+            "xml/guiProfiles.template.xml"
+        ],
+        "debug": {
+            "exclude": []
+        },
+        "release": {
+            "exclude": [
+                "scripts/debug.lua",
+                "scripts/schema.lua"
+            ]
+        }
+    },
+    "profile": {
+        "variablesFile": "xml/guiProfiles.jsonc",
+        "templateFile": "xml/guiProfiles.template.xml",
+        "targetFile": "xml/guiProfiles.xml"
+    }
+}

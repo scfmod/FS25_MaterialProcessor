@@ -1,0 +1,17 @@
+<texture>
+    <meta>
+        <filename>ui_elements.png</filename>
+        <size width="1024" height="512" />
+    </meta>
+
+    <slices>
+        <slice id="shadow" uvs="0px 424px 1024px 56px" />
+        <slice id="list_shadow" uvs="82px 424px 860px 56px" />
+        <slice id="bar" uvs="0px 480px 1024px 28px" />
+        <slice id="bar_small" uvs="0px 480px 200px 32px" />
+
+        <slice id="list_box" uvs="2px 1px 252px 34px" />
+        <slice id="list_box_selected" uvs="2px 65px 252px 34px" />
+        <slice id="list_box_hover" uvs="2px 129px 252px 34px" />
+    </slices>
+</texture>

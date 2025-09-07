@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<HUD>
+    <Bitmap id="root" onCreate="onCreateElement" profile="mProcessor_hudUnitRoot">
+        <Bitmap id="image" onCreate="onCreateElement" profile="mProcessor_hudUnitImage" />
+        <Text id="title" onCreate="onCreateElement" profile="mProcessor_hudUnitTitle" />
+        <Text id="text" onCreate="onCreateElement" profile="mProcessor_hudUnitText" />
+    </Bitmap>
+</HUD>

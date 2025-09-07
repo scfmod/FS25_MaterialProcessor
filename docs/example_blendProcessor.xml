@@ -1,0 +1,17 @@
+<vehicle>
+    <materialProcessor
+        type="blend"
+        needsToBeTurnedOn="true"
+        needsToBePoweredOn="true"
+    >
+        <configurations>
+            <configuration name="Asphalt" litersPerSecond="500">
+                <output fillType="ASPHALT" fillUnitIndex="3">
+                    <input fillType="GRAVEL" fillUnitIndex="4" ratio="0.55" />
+                    <input fillType="SAND" fillUnitIndex="5" ratio="0.35" />
+                    <input fillType="BINDER" fillUnitIndex="6" ratio="0.1" />
+                </output>
+            </configuration>
+        </configurations>
+    </materialProcessor>
+</vehicle>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<l10n>
+    <texts>
+        <text name="action_changeConfiguration" text="Change configuration" />
+        <text name="action_disableHud" text="Disable HUD" />
+        <text name="action_enableHud" text="Enable HUD" />
+        <text name="input_SELECT_CONFIGURATION" text="Select configuration" />
+        <text name="ui_dialogTitleInput" text="Select input" />
+        <text name="ui_dialogTitleOutput" text="Select output" />
+        <text name="ui_input" text="Input" />
+        <text name="ui_inputs" text="Inputs" />
+        <text name="ui_output" text="Output" />
+        <text name="ui_outputs" text="Outputs" />
+    </texts>
+</l10n>

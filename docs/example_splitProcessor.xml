@@ -1,0 +1,39 @@
+<vehicle>
+    <!-- type attribute is required, the rest is showing default values -->
+    <!-- needsToBeTurnedOn is only affected if vehicle has the TurnOn specialization -->
+    <materialProcessor
+        type="split"
+        needsToBeTurnedOn="true"
+        needsToBePoweredOn="true"
+        defaultCanDischargeToGround="false"
+        canToggleDischargeToGround="true"
+        canDischargeToGroundAnywhere="false"
+        canDischargeToAnyObject="false"
+    >
+        <!-- At least one (1) configuration is required -->
+        <configurations>
+            <configuration name="Crush stones" litersPerSecond="500">
+                <!-- Required-->
+                <input fillType="STONES" fillUnitIndex="3">
+                    <!-- If ratio doesn't add up to 1.0 exactly you may encounter issues -->
+                    <output fillType="GRAVEL" fillUnitIndex="4" ratio="0.35" />
+                    <output fillType="RUBBLE" fillUnitIndex="5" ratio="0.65" />
+                </input>
+            </configuration>
+            <configuration name="Filter gravel" litersPerSecond="800">
+                <input fillType="GRAVEL" fillUnitIndex="3">
+                    <output fillType="DIRT" fillUnitIndex="4" ratio="0.25" />
+                    <output fillType="SAND" fillUnitIndex="5" ratio="0.7" />
+                    <output fillType="STONES" fillUnitIndex="6" ratio="0.05" />
+                </input>
+            </configuration>
+        </configurations>
+
+        <!-- Optional; enables support for multiple discharge nodes -->
+        <dischargeNodes>
+            <!-- Discharge nodes .. -->
+            <!-- 1 entry for each output used -->
+            <node />
+        </dischargeNodes>
+    </materialProcessor>
+</vehicle>

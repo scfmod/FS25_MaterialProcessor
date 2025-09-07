@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<GuiProfiles>
+    <Profile name="mProcessor_hudUnitRoot" extends="baseReference">
+        <size value="176px 32px" />
+        <imageColor value="0.212 0.349 0 0.95" />
+        <imageDisabledColor value="0 0 0 0.95" />
+
+        <hasFrame value="true" />
+        <frameThickness value="1dp 1dp 1dp 1dp" />
+        <frameLeftColor value="0.212 0.349 0 0.95" />
+        <frameTopColor value="0.212 0.349 0 0.95" />
+        <frameRightColor value="0.212 0.349 0 0.95" />
+        <frameBottomColor value="0.212 0.349 0 0.95" />
+    </Profile>
+    <Profile name="mProcessor_hudUnitImage" with="anchorMiddleLeft">
+        <size value="24px 24px" />
+        <position value="4px 0" />
+        <imageColor value="1 1 1 1" />
+        <imageUVs value="0 0 1 1" />
+    </Profile>
+    <Profile name="mProcessor_hudUnitTitle" extends="textDefault" with="anchorMiddleLeft">
+        <size value="136px 16px" />
+        <position value="34px 6px" />
+        <textColor value="0 0 0 1" />
+        <textDisabledColor value="0.259 0.431 0.004 1" />
+        <textSize value="11px" />
+        <textBold value="true" />
+        <textMaxWidth value="120px" />
+        <textAlignment value="left" />
+        <textUpperCase value="true" />
+    </Profile>
+    <Profile name="mProcessor_hudUnitText" extends="textDefault" with="anchorMiddleLeft">
+        <size value="136px 16px" />
+        <position value="34px -5px" />
+        <textSize value="12px" />
+        <textBold value="false" />
+        <textMaxWidth value="120px" />
+        <textAlignment value="left" />
+        <textUpperCase value="false" />
+        <textColor value="1 1 1 1" />
+        <textDisabledColor value="1 1 1 1" />
+    </Profile>
+</GuiProfiles>
