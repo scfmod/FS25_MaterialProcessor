@@ -73,7 +73,7 @@ end
 ---@param xmlFile XMLFile
 ---@param key string
 function ProcessorUtils.loadDischargeEffects(node, xmlFile, key)
-    node.effects = g_effectManager:loadEffect(xmlFile, key .. '.effects', node.vehicle.components, node.vehicle, node.vehicle.i3dMappings)
+    node.effects = g_effectManager:loadEffect(xmlFile, key .. '.effects', node.vehicle.components, node.vehicle, node.vehicle.i3dMappings, math.huge)
 
     if node.isClient then
         node.playSound = xmlFile:getValue(key .. '#playSound')
