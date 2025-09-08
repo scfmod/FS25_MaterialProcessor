@@ -391,10 +391,12 @@ end
 ---@param fillUnitIndex number | nil
 ---@param hitTerrain boolean | nil
 function ProcessorDischargeNode:handleDischargeRaycast(object, shape, distance, fillUnitIndex, hitTerrain)
-    if object == nil and self.currentDischargeState == Dischargeable.DISCHARGE_STATE_OBJECT then
-        self:setDischargeState(Dischargeable.DISCHARGE_STATE_OFF)
-    elseif object == nil and self.processor:getIsAvailable() and self:getCanDischargeToGround() then
-        self:setDischargeState(Dischargeable.DISCHARGE_STATE_GROUND)
+    if self.isServer then
+        if object == nil and self.currentDischargeState == Dischargeable.DISCHARGE_STATE_OBJECT then
+            self:setDischargeState(Dischargeable.DISCHARGE_STATE_OFF)
+        elseif object == nil and self.processor:getIsAvailable() and self:getCanDischargeToGround() then
+            self:setDischargeState(Dischargeable.DISCHARGE_STATE_GROUND)
+        end
     end
 
     if self.distanceObjectChanges ~= nil then
