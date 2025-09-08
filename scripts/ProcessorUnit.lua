@@ -6,6 +6,7 @@
 ---@field config ProcessorConfiguration
 ---@field hudNode number | nil
 ---@field hidden boolean
+---@field discardOutput boolean
 ProcessorUnit = {}
 
 local ProcessorUnit_mt = Class(ProcessorUnit)
@@ -19,6 +20,7 @@ function ProcessorUnit.registerXMLPaths(schema, key, requireRatio)
     schema:register(XMLValueType.STRING, key .. '#fillType', 'Filltype name', nil, true)
     schema:register(XMLValueType.NODE_INDEX, key .. '#hudNode', 'Set custom node for HUD display position', nil, false)
     schema:register(XMLValueType.BOOL, key .. '#hidden', 'Hide in HUD and GUI', false)
+    schema:register(XMLValueType.BOOL, key .. '#discard', 'Discard output', false)
 end
 
 ---@param processor Processor
@@ -34,6 +36,7 @@ function ProcessorUnit.new(processor, config, customMt)
     self.config = config
     self.ratio = 0
     self.hidden = false
+    self.discardOutput = false
 
     return self
 end
@@ -44,6 +47,8 @@ end
 ---@nodiscard
 function ProcessorUnit:load(xmlFile, key)
     self.hidden = xmlFile:getValue(key .. '#hidden', self.hidden)
+    self.discardOutput = xmlFile:getValue(key .. '#discard', self.discardOutput)
+
     ---@diagnostic disable-next-line: assign-type-mismatch
     self.ratio = MathUtil.round(xmlFile:getValue(key .. '#ratio', self.ratio), 4)
 
@@ -118,6 +123,10 @@ function ProcessorUnit:deactivate()
 end
 
 function ProcessorUnit:addFillLevel(fillLevelDelta)
+    if self.discardOutput then
+        return fillLevelDelta
+    end
+
     return self.processor:addFillUnitFillLevel(self.fillUnit.fillUnitIndex, fillLevelDelta, self.fillType.index)
 end
 
@@ -130,16 +139,28 @@ end
 ---@return number
 ---@nodiscard
 function ProcessorUnit:getAvailableCapacity()
+    if self.discardOutput then
+        return self:getTotalCapacity()
+    end
+
     return self.processor:getFillUnitFreeCapacity(self.fillUnit.fillUnitIndex)
 end
 
 function ProcessorUnit:getFillPercentage()
+    if self.discardOutput then
+        return 0
+    end
+
     return self.processor:getFillUnitPercentage(self.fillUnit.fillUnitIndex)
 end
 
 ---@return number
 ---@nodiscard
 function ProcessorUnit:getFillLevel()
+    if self.discardOutput then
+        return 0
+    end
+
     return self.processor:getFillUnitFillLevel(self.fillUnit.fillUnitIndex)
 end
 

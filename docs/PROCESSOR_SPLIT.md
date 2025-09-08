@@ -107,6 +107,7 @@ vehicle.materialProcessor.configurations.configuration(%).input.output(%)
 | fillUnitIndex | int     | Yes      |         | Output vehicle fillUnitIndex |
 | hudNode       | node    | No       |         | Set custom node for HUD display position |
 | hidden        | boolean | No       | ```false``` | Hide output from HUD and GUI |
+| discard       | boolean| No       | ```false```   | Set to true to discard output material instead of adding to fillUnit |
 
 NOTE: It's important to make sure that all output ratios adds up to ```1.0```.
 
