@@ -6,6 +6,7 @@
 - [Configurations](#configurations)
   - [Output](#output)
   - [Inputs](#inputs)
+- [Discharge nodes](#discharge-nodes)
 
 ## Processor
 
@@ -101,3 +102,11 @@ vehicle.materialProcessor.configurations.configuration(%).output.input(%)
 | displayNode   | node    | No       |         | Set custom node for HUD display position |
 | displayNodeOffsetY | float | No    |         | Y offset position for HUD display |
 | visible       | boolean | No       | ```true``` | Input visibility in HUD and GUI |
+
+## Discharge nodes
+
+```
+vehicle.materialProcessor.dischargeNodes.node(%)
+```
+
+The blend processor supports using [custom discharge node(s)](./DISCHARGE_NODE.md) if desired.
