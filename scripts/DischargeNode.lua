@@ -44,6 +44,8 @@
 ---@field dischargeStateSamples table
 ---@field turnOffSoundTimer? number
 ---@field stateObjectChanges? table
+---@field fillUnitObjectChanges? table
+---@field fillUnitObjectChangeThreshold number
 ---@field isAsyncRaycastActive boolean
 ---@field raycastDischargeObject? table
 ---@field raycastDischargeHitObject? table
@@ -112,6 +114,8 @@ function DischargeNode.registerXMLPaths(schema, key)
     schema:register(XMLValueType.FLOAT, key .. ".distanceObjectChanges#threshold", "Defines at which raycast distance the object changes", 0.5)
     ObjectChangeUtil.registerObjectChangeXMLPaths(schema, key .. '.distanceObjectChanges')
     ObjectChangeUtil.registerObjectChangeXMLPaths(schema, key .. ".stateObjectChanges")
+    schema:register(XMLValueType.FLOAT, key .. '.fillUnitObjectChanges#threshold', 'Defines at which fillUnit fill level percentage the object changes', 0.5)
+    ObjectChangeUtil.registerObjectChangeXMLPaths(schema, key .. ".fillUnitObjectChanges")
 
     -- Discharge effects, animations
     schema:register(XMLValueType.NODE_INDEX, key .. '#soundNode', 'Sound node index path')
@@ -251,6 +255,12 @@ end
 ---@nodiscard
 function DischargeNode:getFillLevel()
     return self.vehicle:getFillUnitFillLevel(self.fillUnitIndex) or 0
+end
+
+---@return number
+---@nodiscard
+function DischargeNode:getFillLevelPercentage()
+    return self.vehicle:getFillUnitFillLevelPercentage(self.fillUnitIndex) or 0
 end
 
 ---@return boolean
@@ -464,6 +474,11 @@ function DischargeNode:updateTick(dt)
 
     if self.isClient then
         self:updateDischargeSound(dt)
+    end
+
+    if self.fillUnitObjectChanges ~= nil then
+        local fillLevelPct = self:getFillLevelPercentage()
+        ObjectChangeUtil.setObjectChanges(self.fillUnitObjectChanges, fillLevelPct > self.fillUnitObjectChangeThreshold, self.vehicle, self.vehicle.setMovingToolDirty)
     end
 
     if self.isServer then

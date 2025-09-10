@@ -194,3 +194,14 @@ For more details on these look at the official documentation files for Vehicle.
     </materialProcessor>
 </vehicle>
 ```
+
+### FillUnit object changes
+
+```
+vehicle.materialProcessor.dischargeNodes.node(%).fillUnitObjectChanges
+```
+
+### Attributes
+| Name      | Type  | Required | Default | Description              |
+|-----------|-------|----|-----------|------------------------------|
+| threshold | float | No | ```0.5````| Defines at which fillUnit fill level percentage the object changes |
