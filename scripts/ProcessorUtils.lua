@@ -92,11 +92,6 @@ function ProcessorUtils.loadDischargeEffects(dischargeNode, xmlFile, key)
             dischargeNode.playSound = false
         end
 
-        dischargeNode.fillLevelSoundEnabledIfNotProcessing = xmlFile:getValue(key .. '.fillLevelSound#enabledIfNotProcessing', true)
-        dischargeNode.fillLevelSoundThreshold = xmlFile:getValue(key .. '.fillLevelSound#threshold', 0.5)
-        dischargeNode.fillLevelSoundThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelSound#thresholdIsGreater', true)
-        dischargeNode.fillLevelSample = g_soundManager:loadSampleFromXML(xmlFile, key, "fillLevelSound", dischargeNode.vehicle.baseDirectory, dischargeNode.vehicle.components, 0, AudioGroup.VEHICLE, dischargeNode.vehicle.i3dMappings, dischargeNode.vehicle)
-
         dischargeNode.dischargeStateSamples = g_soundManager:loadSamplesFromXML(xmlFile, key, "dischargeStateSound", dischargeNode.vehicle.baseDirectory, dischargeNode.vehicle.components, 0, AudioGroup.VEHICLE, dischargeNode.vehicle.i3dMappings, dischargeNode.vehicle)
         dischargeNode.animationNodes = g_animationManager:loadAnimations(xmlFile, key .. ".animationNodes", dischargeNode.vehicle.components, dischargeNode.vehicle, dischargeNode.vehicle.i3dMappings)
         dischargeNode.effectAnimationNodes = g_animationManager:loadAnimations(xmlFile, key .. ".effectAnimationNodes", dischargeNode.vehicle.components, dischargeNode.vehicle, dischargeNode.vehicle.i3dMappings)
@@ -128,15 +123,5 @@ function ProcessorUtils.loadDischargeObjectChanges(node, xmlFile, key)
         node.stateObjectChanges = nil
     else
         ObjectChangeUtil.setObjectChanges(node.stateObjectChanges, false, node.vehicle, node.vehicle.setMovingToolDirty)
-    end
-
-    node.fillLevelObjectChanges = {}
-    ObjectChangeUtil.loadObjectChangeFromXML(xmlFile, key .. '.fillLevelObjectChanges', node.fillLevelObjectChanges, node.vehicle.components, node.vehicle)
-
-    if #node.fillLevelObjectChanges == 0 then
-        node.fillLevelObjectChanges = nil
-    else
-        node.fillLevelObjectChangeThreshold = xmlFile:getValue(key .. '.fillLevelObjectChanges#threshold', 0.5)
-        ObjectChangeUtil.setObjectChanges(node.fillLevelObjectChanges, false, node.vehicle, node.vehicle.setMovingToolDirty)
     end
 end

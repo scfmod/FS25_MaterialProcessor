@@ -1,9 +1,3 @@
-# Table of contents
-
-- [Custom discharge node](#custom-discharge-node)
-- [Fill level object changes](#fill-level-object-changes)
-- [Fill level sound](#fill-level-sound)
-
 ## Custom discharge node
 
 ```
@@ -72,76 +66,6 @@ Material Processor relies on using custom discharge nodes to enchance functional
                     ...
                 </effects>
                 <dischargeStateSound template="augerBelt" pitchScale="0.7" volumeScale="1.4" fadeIn="0.2" fadeOut="1" innerRadius="1.0" outerRadius="40.0" linkNode="dischargeNodeFront" />
-            </node>
-        </dischargeNodes>
-    </materialProcessor>
-</vehicle>
-```
-
-## Fill level object changes
-
-```
-vehicle.materialProcessor.dischargeNodes.node(%).fillLevelObjectChanges
-```
-
-Trigger object changes based on the fill level percentage.
-
-### Attributes
-| Name      | Type  | Required | Default | Description              |
-|-----------|-------|----|-----------|------------------------------|
-| threshold | float | No | ```0.5```| Defines at which fillUnit fill level percentage the object changes |
-
-
-### Example
-```xml
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<vehicle>
-    <materialProcessor type="split">
-        <configurations>
-            ...
-        </configurations>
-
-        <dischargeNodes>
-            <node node="dischargeNodeSideR" emptySpeed="100" fillUnitIndex="4" unloadInfoIndex="1">
-                ...
-                <fillLevelObjectChanges threshold="0.85">
-					<objectChange node="alarmBeacon" visibilityActive="true" visibilityInactive="false" />
-				</fillLevelObjectChanges>
-            </node>
-        </dischargeNodes>
-    </materialProcessor>
-</vehicle>
-```
-
-## Fill level sound
-
-```
-vehicle.materialProcessor.dischargeNodes.node(%).fillLevelSound
-```
-
-Play sound depending on the fill level percentage.
-Same as a normal vehicle sample entry, but with additional attributes.
-
-### Attributes
-| Name      | Type  | Required | Default | Description              |
-|-----------|-------|----|-----------|------------------------------|
-| threshold | float | No | ```0.5```| Defines at which fillUnit fill level percentage the sound is triggered |
-| thresholdIsGreater | boolean | No  | ```true``` | If true the sound is triggered above threshold, if not then below threshold |
-| enabledIfNotProcessing | boolean | No | ```true``` | Determine whether sound can be played if the processor is active or not |
-
-### Example
-```xml
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<vehicle>
-    <materialProcessor type="split">
-        <configurations>
-            ...
-        </configurations>
-
-        <dischargeNodes>
-            <node node="dischargeNodeSideR" emptySpeed="100" fillUnitIndex="4" unloadInfoIndex="1">
-                ...
-                <fillLevelSound threshold="0.9" template="rollbeltAlarm" linkNode="alarmSoundNode" />
             </node>
         </dischargeNodes>
     </materialProcessor>

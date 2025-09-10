@@ -44,8 +44,6 @@
 ---@field dischargeStateSamples table
 ---@field turnOffSoundTimer? number
 ---@field stateObjectChanges? table
----@field fillLevelObjectChanges? table
----@field fillLevelObjectChangeThreshold number
 ---@field isAsyncRaycastActive boolean
 ---@field raycastDischargeObject? table
 ---@field raycastDischargeHitObject? table
@@ -63,10 +61,6 @@
 ---@field distanceObjectChangeThreshold number
 ---@field lineOffset number
 ---@field playSound boolean
----@field fillLevelSoundThreshold number
----@field fillLevelSoundThresholdIsGreater boolean
----@field fillLevelSoundEnabledIfNotProcessing boolean
----@field fillLevelSample? table
 ---
 ---@field canFillOwnVehicle boolean
 ---@field canDischargeToVehicle boolean
@@ -118,8 +112,6 @@ function DischargeNode.registerXMLPaths(schema, key)
     schema:register(XMLValueType.FLOAT, key .. ".distanceObjectChanges#threshold", "Defines at which raycast distance the object changes", 0.5)
     ObjectChangeUtil.registerObjectChangeXMLPaths(schema, key .. '.distanceObjectChanges')
     ObjectChangeUtil.registerObjectChangeXMLPaths(schema, key .. ".stateObjectChanges")
-    schema:register(XMLValueType.FLOAT, key .. '.fillLevelObjectChanges#threshold', 'Defines at which fillUnit fill level percentage the object changes', 0.5)
-    ObjectChangeUtil.registerObjectChangeXMLPaths(schema, key .. ".fillLevelObjectChanges")
 
     -- Discharge effects, animations
     schema:register(XMLValueType.NODE_INDEX, key .. '#soundNode', 'Sound node index path')
@@ -127,10 +119,6 @@ function DischargeNode.registerXMLPaths(schema, key)
     EffectManager.registerEffectXMLPaths(schema, key .. ".effects")
     SoundManager.registerSampleXMLPaths(schema, key, "dischargeSound")
     SoundManager.registerSampleXMLPaths(schema, key, "dischargeStateSound(?)")
-    SoundManager.registerSampleXMLPaths(schema, key, 'fillLevelSound')
-    schema:register(XMLValueType.FLOAT, key .. '.fillLevelSound#threshold', '', 0.5)
-    schema:register(XMLValueType.BOOL, key .. '.fillLevelSound#thresholdIsGreater', '', true)
-    schema:register(XMLValueType.BOOL, key .. '.fillLevelSound#enabledIfNotProcessing', '', true)
     schema:register(XMLValueType.BOOL, key .. ".dischargeSound#overwriteSharedSound", "Overwrite shared discharge sound with sound defined in discharge node", false)
     AnimationManager.registerAnimationNodesXMLPaths(schema, key .. ".animationNodes")
     AnimationManager.registerAnimationNodesXMLPaths(schema, key .. ".effectAnimationNodes")
@@ -180,7 +168,6 @@ function DischargeNode:delete()
     g_effectManager:deleteEffects(self.effects)
     g_soundManager:deleteSample(self.sample)
     g_soundManager:deleteSample(self.dischargeSample)
-    g_soundManager:deleteSample(self.fillLevelSample)
     g_soundManager:deleteSamples(self.dischargeStateSamples)
     g_animationManager:deleteAnimations(self.animationNodes)
     g_animationManager:deleteAnimations(self.effectAnimationNodes)
@@ -483,12 +470,6 @@ function DischargeNode:updateTick(dt)
 
     if self.isClient then
         self:updateDischargeSound(dt)
-        self:updateFillLevelSound(dt)
-    end
-
-    if self.fillLevelObjectChanges ~= nil then
-        local fillLevelPct = self:getFillLevelPercentage()
-        ObjectChangeUtil.setObjectChanges(self.fillLevelObjectChanges, fillLevelPct > self.fillLevelObjectChangeThreshold, self.vehicle, self.vehicle.setMovingToolDirty)
     end
 
     if self.isServer then
@@ -917,26 +898,6 @@ end
 function DischargeNode:updateDischargeInfo(x, y, z)
     if self.info.useRaycastHitPosition then
         setWorldTranslation(self.info.node, x, y, z)
-    end
-end
-
-function DischargeNode:updateFillLevelSound(dt)
-    if self.playSound and self.fillLevelSample == nil then
-        return
-    end
-
-    local fillLevelPct = self:getFillLevelPercentage()
-    local playSample = (self.fillLevelSoundThresholdIsGreater and fillLevelPct > self.fillLevelSoundThreshold) or (not self.fillLevelSoundThresholdIsGreater and fillLevelPct < self.fillLevelSoundThreshold)
-    local isPlaying = g_soundManager:getIsSamplePlaying(self.fillLevelSample)
-
-    if not self.fillLevelSoundEnabledIfNotProcessing and not self.vehicle:getIsProcessingEnabled() then
-        playSample = false
-    end
-
-    if playSample and not isPlaying then
-        g_soundManager:playSample(self.fillLevelSample)
-    elseif not playSample and isPlaying then
-        g_soundManager:stopSample(self.fillLevelSample)
     end
 end
 
