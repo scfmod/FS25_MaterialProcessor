@@ -129,13 +129,13 @@ function ProcessorUtils.loadDischargeObjectChanges(node, xmlFile, key)
         ObjectChangeUtil.setObjectChanges(node.stateObjectChanges, false, node.vehicle, node.vehicle.setMovingToolDirty)
     end
 
-    node.fillUnitObjectChanges = {}
-    ObjectChangeUtil.loadObjectChangeFromXML(xmlFile, key .. '.fillUnitObjectChanges', node.fillUnitObjectChanges, node.vehicle.components, node.vehicle)
+    node.fillLevelObjectChanges = {}
+    ObjectChangeUtil.loadObjectChangeFromXML(xmlFile, key .. '.fillLevelObjectChanges', node.fillLevelObjectChanges, node.vehicle.components, node.vehicle)
 
-    if #node.fillUnitObjectChanges == 0 then
-        node.fillUnitObjectChanges = nil
+    if #node.fillLevelObjectChanges == 0 then
+        node.fillLevelObjectChanges = nil
     else
-        node.fillUnitObjectChangeThreshold = xmlFile:getValue(key .. '.fillUnitObjectChanges#threshold', 0.5)
-        ObjectChangeUtil.setObjectChanges(node.fillUnitObjectChanges, false, node.vehicle, node.vehicle.setMovingToolDirty)
+        node.fillLevelObjectChangeThreshold = xmlFile:getValue(key .. '.fillLevelObjectChanges#threshold', 0.5)
+        ObjectChangeUtil.setObjectChanges(node.fillLevelObjectChanges, false, node.vehicle, node.vehicle.setMovingToolDirty)
     end
 end

@@ -199,7 +199,7 @@ For more details on these look at the official documentation files for Vehicle.
 ### FillUnit object changes
 
 ```
-vehicle.materialProcessor.dischargeNodes.node(%).fillUnitObjectChanges
+vehicle.materialProcessor.dischargeNodes.node(%).fillLevelObjectChanges
 ```
 
 Trigger object changes based on the fill level percentage.
