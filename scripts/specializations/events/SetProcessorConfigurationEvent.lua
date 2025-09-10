@@ -49,7 +49,7 @@ function SetProcessorConfigurationEvent:run(connection)
     end
 
     if self.vehicle ~= nil and self.vehicle:getIsSynchronized() then
-        self.vehicle:setProcessorConfigurationIndex(self.index, true)
+        self.vehicle:setProcessorConfiguration(self.index, true)
     end
 end
 

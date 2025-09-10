@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer" />
+    <Bitmap id="dialogBg" profile="processorDialog_fullscreenBg" />
+
+    <Bitmap id="dialogElement" profile="processorDialog_dialogBg">
+        <ThreePartBitmap profile="fs25_dialogBgMiddleSmall" />
+        <ThreePartBitmap profile="fs25_dialogBgTopSmall" />
+        <ThreePartBitmap profile="fs25_dialogBgBottom" />
+
+        <Text position="0px -32px" profile="processorDialog_title" text="$l10n_action_changeConfiguration" />
+
+        <Bitmap profile="processorDialog_dialogContent">
+            <GuiElement profile="processorDialog_listBoxLeft">
+                <Text profile="processorDialog_listBoxTitle" id="listTitle" text="-" />
+
+                <SmoothList profile="processorDialog_list" id="list" focusInit="onOpen" onClick="onItemClick" onDoubleClick="onItemDoubleClick">
+                    <ListItem profile="processorDialog_listItem">
+                        <Bitmap name="image" profile="processorDialog_listItemImage" />
+                        <Text name="title" profile="processorDialog_listItemTitle" />
+                        <Text name="text" profile="processorDialog_listItemText" text="Crushed Stone" />
+                        <Text name="info" profile="processorDialog_listItemInfo" text="300 l/s" />
+                    </ListItem>
+                </SmoothList>
+
+                <ThreePartBitmap profile="processorDialog_listSliderBoxLeft">
+                    <Slider dataElementId="list" profile="processorDialog_listSlider" />
+                </ThreePartBitmap>
+
+                <Bitmap profile="processorDialog_listShadowTop" />
+                <Bitmap profile="processorDialog_listShadowBottom" />
+            </GuiElement>
+            <GuiElement profile="processorDialog_listBoxRight">
+                <Text profile="processorDialog_listBoxTitle" id="unitsListTitle" text="-" />
+
+                <SmoothList profile="processorDialog_unitsList" id="unitsList" focusInit="onOpen" onClick="onItemClick" onDoubleClick="onItemDoubleClick">
+                    <ListItem profile="processorDialog_unitsListItem">
+                        <Bitmap name="image" profile="processorDialog_unitsListItemImage" />
+                        <Text name="title" profile="processorDialog_unitsListItemTitle" />
+                        <Text name="ratio" profile="processorDialog_unitsListItemRatio" />
+                    </ListItem>
+                </SmoothList>
+
+                <ThreePartBitmap profile="processorDialog_listSliderBoxRight">
+                    <Slider dataElementId="unitsList" profile="processorDialog_listSlider" />
+                </ThreePartBitmap>
+
+                <Bitmap profile="processorDialog_listShadowTop" />
+                <Bitmap profile="processorDialog_listShadowBottom" />
+            </GuiElement>
+        </Bitmap>
+
+        <BoxLayout profile="fs25_dialogButtonBox">
+            <Button id="backButton" onClick="onClickBack" profile="buttonBack" text="$l10n_button_cancel" />
+            <Bitmap profile="fs25_dialogButtonBoxSeparator" />
+            <Button id="toggleHudButton" profile="buttonActivate" text="$l10n_action_disableHud" onClick="onClickToggleHud" />
+            <Bitmap profile="fs25_dialogButtonBoxSeparator" />
+            <Button id="applyButton" onClick="onClickApply" profile="buttonOK" text="$l10n_button_apply" />
+        </BoxLayout>
+    </Bitmap>
+    <GuiProfiles>
+        <Profile name="processorDialog_fullscreenBg" extends="dialogFullscreenBg">
+            <imageColor value="0.013 0.013 0.013 0.9" />
+        </Profile>
+
+        <Profile name="processorDialog_dialogBg" extends="fs25_dialogBg">
+            <size value="820px 760px" />
+            <imageColor value="0 0 0 0" />
+        </Profile>
+
+        <Profile name="processorDialog_dialogContent">
+            <size value="820px 720px" />
+            <imageColor value="0 0 0 0" />
+        </Profile>
+
+        <Profile name="processorDialog_title" extends="fs25_dialogTitle">
+            <textSize value="18px" />
+        </Profile>
+
+        <Profile name="processorDialog_listBoxLeft" with="anchorMiddleLeft">
+            <size value="362px 560px" />
+            <position value="16px 0" />
+        </Profile>
+
+        <Profile name="processorDialog_listBoxRight" extends="processorDialog_listBoxLeft" with="anchorMiddleRight">
+            <position value="-32px 0" />
+        </Profile>
+
+        <Profile name="processorDialog_listBoxTitle" extends="textDefault" with="anchorTopCenter">
+            <size value="120px 20px" />
+            <position value="-9px 48px" />
+
+            <textAutoWidth value="true" />
+        </Profile>
+
+        <Profile name="processorDialog_list" extends="list" with="anchorMiddleCenter">
+            <size value="350px 560px" />
+
+            <isHorizontalList value="false" />
+            <selectedWithoutFocus value="true" />
+            <listItemSpacing value="2dp" />
+        </Profile>
+
+        <Profile name="processorDialog_listItem" with="anchorTopStretchingX">
+            <height value="56px" />
+
+            <imageSliceId value="materialProcessor.list_box" />
+            <imageSelectedSliceId value="materialProcessor.list_box_selected" />
+            <imageHighlightedSliceId value="materialProcessor.list_box_hover" />
+        </Profile>
+
+        <Profile name="processorDialog_listItemImage" extends="baseReference" with="anchorMiddleLeft">
+            <size value="32px 32px" />
+            <position value="8px 0" />
+
+            <imageSliceId value="noSlice" />
+        </Profile>
+
+        <Profile name="processorDialog_listItemTitle" extends="fs25_textDarkHighlight" with="anchorMiddleLeft">
+            <size value="200px 32px" />
+            <position value="56px 9px" />
+            <textAutoWidth value="true" />
+            <textBold value="true" />
+        </Profile>
+
+        <Profile name="processorDialog_listItemText" extends="fs25_textDarkHighlight" with="anchorMiddleLeft">
+            <size value="200px 32px" />
+            <position value="56px -9px" />
+            <textAutoWidth value="true" />
+        </Profile>
+
+        <Profile name="processorDialog_listItemInfo" extends="fs25_textDarkHighlight" with="anchorMiddleRight">
+            <size value="200px 32px" />
+            <position value="-8px 0" />
+            <textAutoWidth value="true" />
+            <textAlignment value="right" />
+        </Profile>
+
+        <Profile name="processorDialog_unitsList" extends="processorDialog_list">
+            <selectedWithoutFocus value="false" />
+            <handleFocus value="false" />
+        </Profile>
+
+        <Profile name="processorDialog_unitsListItem" with="anchorTopStretchingX">
+            <height value="48px" />
+
+            <imageColor value="0 0 0 0.2" />
+
+            <imageSliceId value="materialProcessor.list_box" />
+            <imageSelectedSliceId value="materialProcessor.list_box_selected" />
+            <imageHighlightedSliceId value="materialProcessor.list_box_hover" />
+        </Profile>
+
+        <Profile name="processorDialog_unitsListItemImage" with="anchorMiddleLeft">
+            <size value="32px 32px" />
+            <position value="8px 0" />
+            <imageColor value="1 1 1 1" />
+            <imageUVs value="0 0 1 1" />
+        </Profile>
+
+        <Profile name="processorDialog_unitsListItemTitle" extends="textDefault" with="anchorMiddleLeft">
+            <size value="240px 24px" />
+            <position value="56px 0" />
+            <textSize value="14px" />
+            <textColor value="1 1 1 1" />
+            <textSelectedColor value="1 1 1 1" />
+            <textAutoWidth value="true" />
+        </Profile>
+
+        <Profile name="processorDialog_unitsListItemRatio" extends="textDefault" with="anchorMiddleRight">
+            <size value="240px 24px" />
+            <position value="-16px 0" />
+            <textAlignment value="right" />
+            <textSize value="12px" />
+            <textColor value="1 1 1 1" />
+            <textSelectedColor value="1 1 1 1" />
+            <textAutoWidth value="true" />
+        </Profile>
+
+        <Profile name="processorDialog_listSliderBoxRight" extends="fs25_subCategoryListSliderBox">
+        </Profile>
+
+        <Profile name="processorDialog_listSliderBoxLeft" extends="processorDialog_listSliderBoxRight" with="pivotTopLeft">
+            <position value="-8px 0px" />
+        </Profile>
+
+        <Profile name="processorDialog_listSlider" extends="fs25_listSlider">
+            <sliderImageColor value="$preset_fs25_colorGreen" />
+            <startImageColor value="$preset_fs25_colorGreen" />
+            <endImageColor value="$preset_fs25_colorGreen" />
+        </Profile>
+
+        <Profile name="processorDialog_listShadowTop" with="anchorTopCenter">
+            <position value="6px 2px" />
+            <size value="350px 32px" />
+
+            <imageSliceId value="materialProcessor.list_shadow" />
+            <imageColor value="0 0 0 0.5" />
+        </Profile>
+
+        <Profile name="processorDialog_listShadowBottom" extends="processorDialog_listShadowTop" with="anchorBottomCenter">
+            <position value="0 0" />
+
+            <imageUVRotation value="180" />
+        </Profile>
+    </GuiProfiles>
+</GUI>

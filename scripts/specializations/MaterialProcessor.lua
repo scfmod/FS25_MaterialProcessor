@@ -1,13 +1,11 @@
----@class MaterialProcessorSpecialization
----@field processor Processor
----@field state number
----@field dirtyFlagState number
----@field actionEvents table
----@field dirtyFlagDischarge number
-
 source(g_currentModDirectory .. 'scripts/specializations/events/SetDischargeNodeStateEvent.lua')
 source(g_currentModDirectory .. 'scripts/specializations/events/SetDischargeNodeToGroundEvent.lua')
 source(g_currentModDirectory .. 'scripts/specializations/events/SetProcessorConfigurationEvent.lua')
+
+---@class MaterialProcessor_spec
+---@field processor Processor
+---@field actionEvents table
+---@field dirtyFlag number
 
 ---@class MaterialProcessor : VehicleObject
 MaterialProcessor = {}
@@ -29,33 +27,23 @@ function MaterialProcessor.initSpecialization()
     local schema = Vehicle.xmlSchema
 
     schema:setXMLSpecializationType('MaterialProcessor')
-
-    schema:register(XMLValueType.STRING, 'vehicle.materialProcessor#type', 'Processor type (split / blend)', nil, true)
-
     Processor.registerXMLPaths(schema, 'vehicle.materialProcessor')
-    SplitProcessor.registerXMLPaths(schema, 'vehicle.materialProcessor')
-    BlendProcessor.registerXMLPaths(schema, 'vehicle.materialProcessor')
-
     schema:setXMLSpecializationType()
 
     ---@type XMLSchema
     local schemaSavegame = Vehicle.xmlSchemaSavegame
 
     schemaSavegame:setXMLSpecializationType('MaterialProcessor')
-
     Processor.registerSavegameXMLPaths(schemaSavegame, string.format('vehicles.vehicle(?).%s.materialProcessor', MaterialProcessor.MOD_NAME))
-
     schemaSavegame:setXMLSpecializationType()
 end
 
 function MaterialProcessor.registerFunctions(vehicleType)
-    SpecializationUtil.registerFunction(vehicleType, 'getCanProcess', MaterialProcessor.getCanProcess)
+    SpecializationUtil.registerFunction(vehicleType, 'getIsProcessingEnabled', MaterialProcessor.getIsProcessingEnabled)
     SpecializationUtil.registerFunction(vehicleType, 'getProcessor', MaterialProcessor.getProcessor)
-    SpecializationUtil.registerFunction(vehicleType, 'setProcessorDischargeNodeState', MaterialProcessor.setProcessorDischargeNodeState)
-    SpecializationUtil.registerFunction(vehicleType, 'setProcessorDischargeNodeToGround', MaterialProcessor.setProcessorDischargeNodeToGround)
-    SpecializationUtil.registerFunction(vehicleType, 'getProcessorState', MaterialProcessor.getProcessorState)
-    SpecializationUtil.registerFunction(vehicleType, 'setProcessorConfigurationIndex', MaterialProcessor.setProcessorConfigurationIndex)
-    SpecializationUtil.registerFunction(vehicleType, 'setProcessorState', MaterialProcessor.setProcessorState)
+    SpecializationUtil.registerFunction(vehicleType, 'setDischargeNodeState', MaterialProcessor.setDischargeNodeState)
+    SpecializationUtil.registerFunction(vehicleType, 'setProcessorConfiguration', MaterialProcessor.setProcessorConfiguration)
+    SpecializationUtil.registerFunction(vehicleType, 'setDischargeNodeToGround', MaterialProcessor.setDischargeNodeToGround)
 end
 
 function MaterialProcessor.registerEventListeners(vehicleType)
@@ -63,7 +51,6 @@ function MaterialProcessor.registerEventListeners(vehicleType)
     SpecializationUtil.registerEventListener(vehicleType, 'onPostLoad', MaterialProcessor)
     SpecializationUtil.registerEventListener(vehicleType, 'onDelete', MaterialProcessor)
 
-    SpecializationUtil.registerEventListener(vehicleType, 'onTurnedOn', MaterialProcessor)
     SpecializationUtil.registerEventListener(vehicleType, 'onTurnedOff', MaterialProcessor)
 
     SpecializationUtil.registerEventListener(vehicleType, 'onUpdate', MaterialProcessor)
@@ -81,12 +68,10 @@ function MaterialProcessor:onLoad()
     ---@type XMLFile
     local xmlFile = self.xmlFile
 
-    ---@type MaterialProcessorSpecialization
+    ---@type MaterialProcessor_spec
     local spec = self[MaterialProcessor.SPEC_NAME]
 
-    spec.state = Processor.STATE_OFF
-    spec.dirtyFlagState = self:getNextDirtyFlag()
-    spec.dirtyFlagDischarge = self:getNextDirtyFlag()
+    spec.dirtyFlag = self:getNextDirtyFlag()
 
     local processorTypeName = xmlFile:getValue('vehicle.materialProcessor#type')
 
@@ -104,7 +89,7 @@ function MaterialProcessor:onLoad()
 end
 
 function MaterialProcessor:onDelete()
-    ---@type MaterialProcessorSpecialization
+    ---@type MaterialProcessor_spec
     local spec = self[MaterialProcessor.SPEC_NAME]
 
     if spec.processor ~= nil then
@@ -118,7 +103,7 @@ function MaterialProcessor:onPostLoad(savegame)
     if self.isServer and savegame ~= nil and savegame.xmlFile.filename ~= nil then
         local key = savegame.key .. '.' .. MaterialProcessor.MOD_NAME .. '.materialProcessor'
 
-        ---@type MaterialProcessorSpecialization
+        ---@type MaterialProcessor_spec
         local spec = self[MaterialProcessor.SPEC_NAME]
 
         spec.processor:loadFromXMLFile(savegame.xmlFile, key)
@@ -128,108 +113,74 @@ end
 ---@param xmlFile XMLFile
 ---@param key string
 function MaterialProcessor:saveToXMLFile(xmlFile, key)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    local processor = self:getProcessor()
 
-    spec.processor:saveToXMLFile(xmlFile, key)
+    if processor ~= nil then
+        processor:saveToXMLFile(xmlFile, key)
+    end
 end
 
 ---@return Processor
 ---@nodiscard
 function MaterialProcessor:getProcessor()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
-
-    return spec.processor
+    return self[MaterialProcessor.SPEC_NAME].processor
 end
 
----@return number
----@nodiscard
-function MaterialProcessor:getProcessorState()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+function MaterialProcessor:getIsProcessingEnabled()
+    local processor = self:getProcessor()
 
-    return spec.state
-end
-
----@param state number
-function MaterialProcessor:setProcessorState(state)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
-
-    if spec.state ~= state then
-        spec.state = state
-
-        if state == Processor.STATE_OFF then
-            for _, node in ipairs(spec.processor.dischargeNodes) do
-                node:setDischargeState(Dischargeable.DISCHARGE_STATE_OFF, g_server == nil)
-            end
+    if processor ~= nil then
+        if processor.needsToBePoweredOn and not self:getIsPowered() then
+            return false
+        elseif processor.needsToBeTurnedOn and not self:getIsTurnedOn() then
+            return false
         end
 
-        if self.isServer then
-            self:raiseDirtyFlags(spec.dirtyFlagState)
-        end
-    end
-end
-
----@return boolean
----@nodiscard
-function MaterialProcessor:getCanProcess()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
-
-    if spec.processor.needsToBePoweredOn and not self:getIsPowered() then
-        return false
-    elseif spec.processor.needsToBeTurnedOn and not self:getIsTurnedOn() then
-        return false
+        return true
     end
 
-    return true
+    return false
 end
 
 ---@param index number
 ---@param state number
----@param noEventSend boolean | nil
-function MaterialProcessor:setProcessorDischargeNodeState(index, state, noEventSend)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+---@param noEventSend? boolean
+function MaterialProcessor:setDischargeNodeState(index, state, noEventSend)
+    local processor = self:getProcessor()
+    local dischargeNode = processor.dischargeNodes[index]
 
-    local node = spec.processor.dischargeNodes[index]
-
-    if node ~= nil then
-        node:setDischargeState(state, noEventSend)
+    if dischargeNode ~= nil then
+        dischargeNode:setDischargeState(state, noEventSend)
     end
 end
 
 ---@param index number
----@param noEventSend boolean | nil
-function MaterialProcessor:setProcessorConfigurationIndex(index, noEventSend)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+---@param noEventSend? boolean
+function MaterialProcessor:setProcessorConfiguration(index, noEventSend)
+    local processor = self:getProcessor()
 
-    if spec.processor.configurations[index] ~= nil then
-        if spec.processor.configurationIndex ~= index then
+    if processor.configurations[index] ~= nil then
+        if processor.currentConfigurationIndex ~= index then
             SetProcessorConfigurationEvent.sendEvent(self, index, noEventSend)
 
-            spec.processor:setConfiguration(index)
+            processor:setConfiguration(index)
         end
     else
-        Logging.warning('MaterialProcessor:setProcessorConfigurationIndex() Invalid index: %s', tostring(index))
+        Logging.warning('MaterialProcessor:setProcessorConfiguration() Invalid index: %s', tostring(index))
     end
 end
 
 ---@param canDischargeToGround boolean
 ---@param noEventSend boolean | nil
-function MaterialProcessor:setProcessorDischargeNodeToGround(canDischargeToGround, noEventSend)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+function MaterialProcessor:setDischargeNodeToGround(canDischargeToGround, noEventSend)
+    local processor = self:getProcessor()
 
-    if spec.processor.canDischargeToGround ~= canDischargeToGround then
+    if processor.canDischargeToGround ~= canDischargeToGround then
         SetDischargeNodeToGroundEvent.sendEvent(self, canDischargeToGround, noEventSend)
 
-        spec.processor.canDischargeToGround = canDischargeToGround
+        processor.canDischargeToGround = canDischargeToGround
 
-        for _, node in ipairs(spec.processor.dischargeNodes) do
+        for _, node in ipairs(processor.dischargeNodes) do
             node:setDischargeState(Dischargeable.DISCHARGE_STATE_OFF, noEventSend)
         end
 
@@ -239,11 +190,10 @@ end
 
 ---@param dt number
 function MaterialProcessor:onUpdate(dt)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    local processor = self:getProcessor()
 
-    if spec.processor ~= nil then
-        spec.processor:update(dt)
+    if processor ~= nil then
+        processor:update(dt)
     end
 end
 
@@ -252,36 +202,27 @@ end
 ---@param isActiveForInputIgnoreSelection boolean
 ---@param isSelected boolean
 function MaterialProcessor:onUpdateTick(dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    local processor = self:getProcessor()
 
-    if spec.processor ~= nil then
-        spec.processor:updateTick(dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected)
-    end
-end
-
-function MaterialProcessor:onTurnedOn()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
-
-    if self.isServer and spec.processor.needsToBeTurnedOn then
-        self:setProcessorState(Processor.STATE_ON)
+    if processor ~= nil then
+        processor:updateTick(dt)
     end
 end
 
 function MaterialProcessor:onTurnedOff()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    if self.isServer then
+        local processor = self:getProcessor()
 
-    if self.isServer and spec.processor.needsToBeTurnedOn then
-        self:setProcessorState(Processor.STATE_OFF)
+        for _, dischargeNode in ipairs(processor.dischargeNodes) do
+            dischargeNode:setDischargeState(Dischargeable.DISCHARGE_STATE_OFF)
+        end
     end
 end
 
 ---@param isActiveForInput boolean
 ---@param isActiveForInputIgnoreSelection boolean
 function MaterialProcessor:onRegisterActionEvents(isActiveForInput, isActiveForInputIgnoreSelection)
-    ---@type MaterialProcessorSpecialization
+    ---@type MaterialProcessor_spec
     local spec = self[MaterialProcessor.SPEC_NAME]
 
     if self.isClient then
@@ -303,13 +244,13 @@ function MaterialProcessor:onRegisterActionEvents(isActiveForInput, isActiveForI
 end
 
 function MaterialProcessor:updateActionEvents()
-    ---@type MaterialProcessorSpecialization
+    ---@type MaterialProcessor_spec
     local spec = self[MaterialProcessor.SPEC_NAME]
 
     local action = spec.actionEvents[MaterialProcessor.ACTIONS.SELECT_CONFIGURATION]
 
     if action ~= nil then
-        g_inputBinding:setActionEventTextVisibility(action.actionEventId, spec.processor:getHasConfigurations())
+        g_inputBinding:setActionEventTextVisibility(action.actionEventId, #spec.processor.configurations > 0)
     end
 
     action = spec.actionEvents[InputAction.TOGGLE_TIPSTATE_GROUND]
@@ -326,30 +267,24 @@ function MaterialProcessor:updateActionEvents()
 end
 
 function MaterialProcessor:actionEventOpenDialog()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
-
-    g_processorConfigurationDialog:show(spec.processor)
+    g_processorDialog:show(self:getProcessor())
 end
 
 function MaterialProcessor:actionEventToggleDischargeToGround()
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    local processor = self:getProcessor()
 
-    self:setProcessorDischargeNodeToGround(not spec.processor.canDischargeToGround)
+    self:setDischargeNodeToGround(not processor.canDischargeToGround)
 end
 
 ---@param streamId number
 ---@param connection Connection
 function MaterialProcessor:onWriteStream(streamId, connection)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    local processor = self:getProcessor()
 
-    streamWriteUIntN(streamId, spec.state, Processor.SEND_NUM_BITS_STATE)
-    streamWriteUIntN(streamId, spec.processor.configurationIndex, Processor.SEND_NUM_BITS_INDEX)
-    streamWriteBool(streamId, spec.processor.canDischargeToGround)
+    streamWriteUIntN(streamId, processor.currentConfigurationIndex, Processor.SEND_NUM_BITS_INDEX)
+    streamWriteBool(streamId, processor.canDischargeToGround)
 
-    for _, dischargeNode in ipairs(spec.processor.dischargeNodes) do
+    for _, dischargeNode in ipairs(processor.dischargeNodes) do
         dischargeNode:writeStream(streamId, connection)
     end
 end
@@ -357,15 +292,13 @@ end
 ---@param streamId number
 ---@param connection Connection
 function MaterialProcessor:onReadStream(streamId, connection)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
+    local processor = self:getProcessor()
 
-    self:setProcessorState(streamReadUIntN(streamId, Processor.SEND_NUM_BITS_STATE))
-    self:setProcessorConfigurationIndex(streamReadUIntN(streamId, Processor.SEND_NUM_BITS_INDEX), true)
+    self:setProcessorConfiguration(streamReadUIntN(streamId, Processor.SEND_NUM_BITS_INDEX), true)
 
-    spec.processor.canDischargeToGround = streamReadBool(streamId)
+    processor.canDischargeToGround = streamReadBool(streamId)
 
-    for _, dischargeNode in ipairs(spec.processor.dischargeNodes) do
+    for _, dischargeNode in ipairs(processor.dischargeNodes) do
         dischargeNode:readStream(streamId, connection)
     end
 end
@@ -374,15 +307,11 @@ end
 ---@param connection Connection
 ---@param dirtyMask number
 function MaterialProcessor:onWriteUpdateStream(streamId, connection, dirtyMask)
-    ---@type MaterialProcessorSpecialization
+    ---@type MaterialProcessor_spec
     local spec = self[MaterialProcessor.SPEC_NAME]
 
     if not connection:getIsServer() then
-        if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlagState) ~= 0) then
-            streamWriteUIntN(streamId, spec.state, Processor.SEND_NUM_BITS_STATE)
-        end
-
-        if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlagDischarge) ~= 0) then
+        if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlag) ~= 0) then
             for _, dischargeNode in ipairs(spec.processor.dischargeNodes) do
                 dischargeNode:writeUpdateStream(streamId, connection)
             end
@@ -394,16 +323,11 @@ end
 ---@param timestamp number
 ---@param connection Connection
 function MaterialProcessor:onReadUpdateStream(streamId, timestamp, connection)
-    ---@type MaterialProcessorSpecialization
-    local spec = self[MaterialProcessor.SPEC_NAME]
-
     if connection:getIsServer() then
         if streamReadBool(streamId) then
-            self:setProcessorState(streamReadUIntN(streamId, Processor.SEND_NUM_BITS_STATE))
-        end
+            local processor = self:getProcessor()
 
-        if streamReadBool(streamId) then
-            for _, dischargeNode in ipairs(spec.processor.dischargeNodes) do
+            for _, dischargeNode in ipairs(processor.dischargeNodes) do
                 dischargeNode:readUpdateStream(streamId, connection)
             end
         end

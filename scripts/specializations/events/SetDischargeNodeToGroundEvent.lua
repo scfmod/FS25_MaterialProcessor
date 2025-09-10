@@ -49,7 +49,7 @@ function SetDischargeNodeToGroundEvent:run(connection)
     end
 
     if self.vehicle ~= nil and self.vehicle:getIsSynchronized() then
-        self.vehicle:setProcessorDischargeNodeToGround(self.canDischargeToGround, true)
+        self.vehicle:setDischargeNodeToGround(self.canDischargeToGround, true)
     end
 end
 

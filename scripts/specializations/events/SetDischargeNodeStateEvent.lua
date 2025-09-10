@@ -33,16 +33,16 @@ end
 ---@param connection Connection
 function SetDischargeNodeStateEvent:writeStream(streamId, connection)
     NetworkUtil.writeNodeObject(streamId, self.vehicle)
-    streamWriteUIntN(streamId, self.nodeIndex, ProcessorDischargeNode.SEND_NUM_BITS_INDEX)
-    streamWriteUIntN(streamId, self.state, Processor.SEND_NUM_BITS_STATE)
+    streamWriteUIntN(streamId, self.nodeIndex, DischargeNode.SEND_NUM_BITS_INDEX)
+    streamWriteUIntN(streamId, self.state, Dischargeable.SEND_NUM_BITS_DISCHARGE_STATE)
 end
 
 ---@param streamId number
 ---@param connection Connection
 function SetDischargeNodeStateEvent:readStream(streamId, connection)
     self.vehicle = NetworkUtil.readNodeObject(streamId)
-    self.nodeIndex = streamReadUIntN(streamId, ProcessorDischargeNode.SEND_NUM_BITS_INDEX)
-    self.state = streamReadUIntN(streamId, Processor.SEND_NUM_BITS_STATE)
+    self.nodeIndex = streamReadUIntN(streamId, DischargeNode.SEND_NUM_BITS_INDEX)
+    self.state = streamReadUIntN(streamId, Dischargeable.SEND_NUM_BITS_DISCHARGE_STATE)
 
     self:run(connection)
 end
@@ -54,7 +54,7 @@ function SetDischargeNodeStateEvent:run(connection)
     end
 
     if self.vehicle ~= nil and self.vehicle:getIsSynchronized() then
-        self.vehicle:setProcessorDischargeNodeState(self.nodeIndex, self.state, true)
+        self.vehicle:setDischargeNodeState(self.nodeIndex, self.state, true)
     end
 end
 

@@ -37,7 +37,7 @@
 | canToggleDischargeToGround   | boolean | No       | ```true```  | Whether player can toggle discharge to ground or not |
 | defaultCanDischargeToGround  | boolean | No       | ```false``` | Default value for discharging to ground setting |
 | canDischargeToGroundAnywhere | boolean | No       | ```false``` | Bypass land permissions when discharging to ground |
-| canDischargeToAnyObject      | boolean | No       | ```false``` | Bypass vehicle permissions when discharging to object |
+| canDischargeToAnyObject      | boolean | No       | ```false``` | Bypass vehicle permissions when discharging to object/vehicle |
 
 [^1]: If the vehicle doesn't have a turn on function it will disregard this setting.
 
@@ -53,16 +53,22 @@ vehicle.materialProcessor.configurations.configuration(%)
     <materialProcessor type="split">
         <configurations>
             <configuration name="$l10n_myConfigurationName" litersPerSecond="500">
-                <input fillType="DIRT" fillUnitIndex="3">
-                    <output fillType="GRAVEL" fillUnitIndex="4" ratio="0.3" />
-                    <output fillType="SAND" fillUnitIndex="5" ratio="0.7" />
+                <input fillType="DIRT" fillUnit="3">
+                    <output fillType="GRAVEL" fillUnit="4" ratio="0.3" />
+                    <output fillType="SAND" fillUnit="5" ratio="0.7" />
                 </input>
             </configuration>
 
             <configuration name="Filter gravel" litersPerSecond="800">
-                <input fillType="GRAVEL" fillUnitIndex="3">
-                    <output fillType="SAND" fillUnitIndex="4" ratio="0.1" />
-                    <output fillType="STONE" fillUnitIndex="5" ratio="0.9" />
+                <input fillType="GRAVEL" fillUnit="3">
+                    <output fillType="SAND" fillUnit="4" ratio="0.1" />
+                    <output fillType="STONE" fillUnit="5" ratio="0.9" />
+                </input>
+            </configuration>
+
+            <configuration name="Screen sand" litersPerSecond="800">
+                <input fillType="GRAVEL" fillUnit="3">
+                    <output fillType="SAND" fillUnit="4" ratio="0.1" />
                 </input>
             </configuration>
         </configurations>
@@ -90,7 +96,8 @@ vehicle.materialProcessor.configurations.configuration(%).input
 |---------------|--------|----------|---------|------------------------------|
 | fillType      | string | Yes      |         | Name of filltype used for input |
 | fillUnitIndex | int    | Yes      |         | Input vehicle fillUnitIndex |
-| hudNode       | node   | No       |         | Set custom node for HUD display position | 
+| displayNode   | node   | No       |         | Set custom node for HUD display position | 
+| displayNodeOffsetY | float | No   |         | Y offset position for HUD display |
 
 ### Outputs
 
@@ -104,14 +111,12 @@ vehicle.materialProcessor.configurations.configuration(%).input.output(%)
 |---------------|---------|----------|---------|------------------------------|
 | ratio         | float   | Yes      |         | Ratio of output to input (50% = 0.5) |
 | fillType      | string  | Yes      |         | Name of filltype used for output |
-| fillUnitIndex | int     | Yes      |         | Output vehicle fillUnitIndex |
-| hudNode       | node    | No       |         | Set custom node for HUD display position |
-| hidden        | boolean | No       | ```false``` | Hide output from HUD and GUI |
-| discard       | boolean| No       | ```false```   | Set to true to discard output material instead of adding to fillUnit |
+| fillUnit      | int     | Yes      |         | Output vehicle fillUnitIndex |
+| displayNode   | node    | No       |         | Set custom node for HUD display position |
+| displayNodeOffsetY | float | No    |         | Y offset position for HUD display |
+| visible       | boolean | No       | ```true``` | Output visibility in HUD and GUI |
 
-NOTE: It's important to make sure that all output ratios adds up to ```1.0```.
-
-Also remember to add corresponding fillUnit [discharge node](#discharge-nodes) entries if you want to enable multiple discharge nodes to function simultaneously.
+Remember to add corresponding fillUnit [discharge node](#discharge-nodes) entries if you want to enable multiple discharge nodes to function simultaneously.
 
 
 ## Discharge nodes
@@ -129,11 +134,12 @@ This element provides support for the same child elements as base game discharge
 - activationTrigger
 - distanceObjectChanges
 - stateObjectChanges
-- nodeActiveObjectChanges
 - effects
 - dischargeSound
 - dischargeStateSound
 - animationNodes
+- effectAnimationNodes
+- animation
 
 
 For more details on these look at the official documentation files for Vehicle.
@@ -146,12 +152,14 @@ For more details on these look at the official documentation files for Vehicle.
 | node                                 | node      | Yes      |             | Discharge node index path    |
 | emptySpeed                           | int       | No       | ```250```   | Empty speed in liters/second |
 | stopDischargeIfNotPossible           | boolean   | No       | ```true```  | Stop discharge if not possible |
+| allowDischargeWhenInactive           | boolean   | No       | ```false``` | Allow discharging even if discharge node is not used by current configuration |
 | unloadInfoIndex                      | int       | No       | ```1```     | Unload info index |
 | effectTurnOffThreshold               | float     | No       | ```0.25```  | After this time has passed and nothing has been processed the effects are turned off |
 | maxDistance                          | float     | No       | ```10```    | Max discharge distance |
 | soundNode                            | node      | No       |             | Sound node index path |
 | playSound                            | boolean   | No       | ```true```  | Whether to play sounds |
-
+| canFillOwnVehicle                    | boolean   | No       | ```false``` | Discharge node can fill other fill units of the vehicle itself |
+| toolType                             | string    | No       | ```dischargeable``` | Tool type |
 
 ### Example
 ```xml

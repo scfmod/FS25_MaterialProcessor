@@ -1,49 +1,26 @@
----@param path string
-local function load(path)
-    source(g_currentModDirectory .. 'scripts/' .. path)
-end
+g_overlayManager:addTextureConfigFile(g_currentModDirectory .. 'textures/ui_elements.xml', 'materialProcessor', nil)
 
----@diagnostic disable-next-line: lowercase-global
-g_debugMaterialProcessor = fileExists(g_currentModDirectory .. 'scripts/debug.lua')
+source(g_currentModDirectory .. 'scripts/ModGui.lua')
+source(g_currentModDirectory .. 'scripts/ModHud.lua')
+source(g_currentModDirectory .. 'scripts/ModSettings.lua')
 
-local generateSchema = false
+source(g_currentModDirectory .. 'scripts/Configuration.lua')
+source(g_currentModDirectory .. 'scripts/ConfigurationUnit.lua')
+source(g_currentModDirectory .. 'scripts/DischargeNode.lua')
+source(g_currentModDirectory .. 'scripts/Processor.lua')
+source(g_currentModDirectory .. 'scripts/ProcessorUtils.lua')
 
-if generateSchema then
-    load('schema.lua')
-end
+source(g_currentModDirectory .. 'scripts/processors/BlendProcessor.lua')
+source(g_currentModDirectory .. 'scripts/processors/BlendConfiguration.lua')
+source(g_currentModDirectory .. 'scripts/processors/SplitProcessor.lua')
+source(g_currentModDirectory .. 'scripts/processors/SplitConfiguration.lua')
 
--- Utils
-load('utils/ProcessorUtils.lua')
-
--- Base classes
-load('Processor.lua')
-load('ProcessorConfiguration.lua')
-load('ProcessorDischargeNode.lua')
-load('ProcessorUnit.lua')
-
--- Processor types
-load('processorTypes/BlendProcessor.lua')
-load('processorTypes/BlendProcessorConfiguration.lua')
-load('processorTypes/SplitProcessor.lua')
-load('processorTypes/SplitProcessorConfiguration.lua')
-
--- GUI
-load('gui/ProcessorGUI.lua')
-load('gui/dialogs/ProcessorConfigurationDialog.lua')
-
--- HUD
-load('hud/ProcessorHUD.lua')
-
--- Base game extensions
-load('extensions/InteractiveControlExtension.lua')
-
----@diagnostic disable-next-line: lowercase-global
-g_processorGui = ProcessorGUI.new()
-
----@diagnostic disable-next-line: lowercase-global
-g_processorHud = ProcessorHUD.new()
+source(g_currentModDirectory .. 'scripts/extensions/InteractiveControlExtension.lua')
 
 if g_client ~= nil then
-    g_processorGui:load()
-    g_processorHud:load()
+    g_modSettings:loadUserSettings()
+    g_modGui:load()
+    g_modHud:load()
 end
+
+source(g_currentModDirectory .. 'scripts/ModController.lua')

@@ -29,8 +29,13 @@
 | type                         | string  | Yes      |            | Processor type ```blend``` |
 | needsToBePoweredOn           | boolean | No       | ```true``` | Vehicle needs to be powered on |
 | needsToBeTurnedOn            | boolean | No       | ```true``` | Vehicle needs to be turned on (requires turnOnVehicle specialization) [^1] |
+| canToggleDischargeToGround   | boolean | No       | ```true```  | Whether player can toggle discharge to ground or not [^2] |
+| defaultCanDischargeToGround  | boolean | No       | ```false``` | Default value for discharging to ground setting [^2] |
+| canDischargeToGroundAnywhere | boolean | No       | ```false``` | Bypass land permissions when discharging to ground [^2] |
+| canDischargeToAnyObject      | boolean | No       | ```false``` | Bypass vehicle permissions when discharging to object/vehicle [^2] |
 
 [^1]: If the vehicle doesn't have a turn on function it will disregard this setting.
+[^2]: Only applies if custom discharge node(s) are used
 
 ## Configurations
 
@@ -44,10 +49,10 @@ vehicle.materialProcessor.configurations.configuration(%)
     <materialProcessor type="blend">
         <configurations>
             <configuration name="$l10n_myConfigurationName" litersPerSecond="500">
-                <output fillType="ASPHALT" fillUnitIndex="3">
-                    <input fillType="GRAVEL" fillUnitIndex="4" ratio="0.5" />
-                    <input fillType="DIRT" fillUnitIndex="5" ratio="0.4" />
-                    <input fillType="MIXTURE" fillUnitIndex="6" ratio="0.1" />
+                <output fillType="ASPHALT" fillUnit="3">
+                    <input fillType="GRAVEL" fillUnit="4" ratio="0.5" />
+                    <input fillType="DIRT" fillUnit="5" ratio="0.4" />
+                    <input fillType="MIXTURE" fillUnit="6" ratio="0.1" />
                 </output>
             </configuration>
 
@@ -76,9 +81,9 @@ vehicle.materialProcessor.configurations.configuration(%).output
 | Name          | Type   | Required | Default     | Description                  |
 |---------------|--------|----------|-------------|------------------------------|
 | fillType      | string | Yes      |             | Name of filltype used for output |
-| fillUnitIndex | int    | Yes      |             | Output vehicle fillUnitIndex |
-| hudNode       | node   | No       |             | Set custom node for HUD display position | 
-
+| fillUnit      | int    | Yes      |             | Output vehicle fillUnitIndex |
+| displayNode   | node   | No       |             | Set custom node for HUD display position | 
+| displayNodeOffsetY | float | No   |             | Y offset position for HUD display |
 
 ### Inputs
 
@@ -92,8 +97,7 @@ vehicle.materialProcessor.configurations.configuration(%).output.input(%)
 |---------------|---------|----------|---------|------------------------------|
 | ratio         | float   | Yes      |         | Ratio of input to output (50% = 0.5) |
 | fillType      | string  | Yes      |         | Name of filltype used for input |
-| fillUnitIndex | int     | Yes      |         | Input vehicle fillUnitIndex |
-| hudNode       | node    | No       |         | Set custom node for HUD display position |
-| hidden        | boolean | No       | ```false``` | Hide input from HUD and GUI |
-
-NOTE: It's important to make sure that all input ratios adds up to ```1.0```.
+| fillUnit      | int     | Yes      |         | Input vehicle fillUnitIndex |
+| displayNode   | node    | No       |         | Set custom node for HUD display position |
+| displayNodeOffsetY | float | No    |         | Y offset position for HUD display |
+| visible       | boolean | No       | ```true``` | Input visibility in HUD and GUI |

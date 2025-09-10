@@ -6,12 +6,18 @@
     >
         <configurations>
             <configuration name="Asphalt" litersPerSecond="500">
-                <output fillType="ASPHALT" fillUnitIndex="3">
-                    <input fillType="GRAVEL" fillUnitIndex="4" ratio="0.55" />
-                    <input fillType="SAND" fillUnitIndex="5" ratio="0.35" />
-                    <input fillType="BINDER" fillUnitIndex="6" ratio="0.1" />
+                <output fillType="ASPHALT" fillUnit="3">
+                    <input fillType="GRAVEL" fillUnit="4" ratio="0.55" />
+                    <input fillType="SAND" fillUnit="5" ratio="0.35" />
+                    <input fillType="BINDER" fillUnit="6" ratio="0.1" />
                 </output>
             </configuration>
         </configurations>
+
+        <!-- Optional; enables support for multiple discharge nodes -->
+        <dischargeNodes>
+            <!-- Discharge nodes .. -->
+            <node />
+        </dischargeNodes>
     </materialProcessor>
 </vehicle>

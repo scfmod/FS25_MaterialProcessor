@@ -14,17 +14,16 @@
         <configurations>
             <configuration name="Crush stones" litersPerSecond="500">
                 <!-- Required-->
-                <input fillType="STONES" fillUnitIndex="3">
-                    <!-- If ratio doesn't add up to 1.0 exactly you may encounter issues -->
-                    <output fillType="GRAVEL" fillUnitIndex="4" ratio="0.35" />
-                    <output fillType="RUBBLE" fillUnitIndex="5" ratio="0.65" />
+                <input fillType="STONES" fillUnit="3">
+                    <output fillType="GRAVEL" fillUnit="4" ratio="0.35" />
+                    <output fillType="RUBBLE" fillUnit="5" ratio="0.65" />
                 </input>
             </configuration>
             <configuration name="Filter gravel" litersPerSecond="800">
-                <input fillType="GRAVEL" fillUnitIndex="3">
-                    <output fillType="DIRT" fillUnitIndex="4" ratio="0.25" />
-                    <output fillType="SAND" fillUnitIndex="5" ratio="0.7" />
-                    <output fillType="STONES" fillUnitIndex="6" ratio="0.05" />
+                <input fillType="GRAVEL" fillUnit="3">
+                    <output fillType="DIRT" fillUnit="4" ratio="0.25" />
+                    <output fillType="SAND" fillUnit="5" ratio="0.7" />
+                    <output fillType="STONES" fillUnit="6" ratio="0.05" />
                 </input>
             </configuration>
         </configurations>
@@ -32,7 +31,6 @@
         <!-- Optional; enables support for multiple discharge nodes -->
         <dischargeNodes>
             <!-- Discharge nodes .. -->
-            <!-- 1 entry for each output used -->
             <node />
         </dischargeNodes>
     </materialProcessor>
