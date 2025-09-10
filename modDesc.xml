@@ -16,6 +16,7 @@
     </extraSourceFiles>
 
     <specializations>
+        <specialization name="fillUnitExtension" className="FillUnitExtension" filename="scripts/specializations/FillUnitExtension.lua" />
         <specialization name="materialProcessor" className="MaterialProcessor" filename="scripts/specializations/MaterialProcessor.lua" />
     </specializations>
 
