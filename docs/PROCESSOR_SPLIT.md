@@ -189,6 +189,7 @@ For more details on these look at the official documentation files for Vehicle.
                     ...
                 </effects>
                 <dischargeStateSound template="augerBelt" pitchScale="0.7" volumeScale="1.4" fadeIn="0.2" fadeOut="1" innerRadius="1.0" outerRadius="40.0" linkNode="dischargeNodeFront" />
+                <fillLevelSound template="rollbeltAlarm" linkNode="alarmSoundNode" />
             </node>
         </dischargeNodes>
     </materialProcessor>
@@ -201,7 +202,24 @@ For more details on these look at the official documentation files for Vehicle.
 vehicle.materialProcessor.dischargeNodes.node(%).fillUnitObjectChanges
 ```
 
-### Attributes
+Trigger object changes based on the fill level percentage.
+
+#### Attributes
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
-| threshold | float | No | ```0.5````| Defines at which fillUnit fill level percentage the object changes |
+| threshold | float | No | ```0.5```| Defines at which fillUnit fill level percentage the object changes |
+
+### FillLevel sound
+
+```
+vehicle.materialProcessor.dischargeNodes.node(%).fillLevelSound
+```
+
+Play sound depending on the fill level percentage.
+Same as a normal vehicle sample entry, but with two additional attributes.
+
+#### Attributes
+| Name      | Type  | Required | Default | Description              |
+|-----------|-------|----|-----------|------------------------------|
+| threshold | float | No | ```0.5```| Defines at which fillUnit fill level percentage the sound is triggered |
+| thresholdIsGreater | boolean | No  | ```true``` | If true the sound is triggered above threshold, if not then below threshold |
