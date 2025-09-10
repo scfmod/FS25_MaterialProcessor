@@ -92,6 +92,7 @@ function ProcessorUtils.loadDischargeEffects(dischargeNode, xmlFile, key)
             dischargeNode.playSound = false
         end
 
+        dischargeNode.fillLevelSoundEnabledIfNotProcessing = xmlFile:getValue(key .. '.fillLevelSound#enabledIfNotProcessing', true)
         dischargeNode.fillLevelSoundThreshold = xmlFile:getValue(key .. '.fillLevelSound#threshold', 0.5)
         dischargeNode.fillLevelSoundThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelSound#thresholdIsGreater', true)
         dischargeNode.fillLevelSample = g_soundManager:loadSampleFromXML(xmlFile, key, "fillLevelSound", dischargeNode.vehicle.baseDirectory, dischargeNode.vehicle.components, 0, AudioGroup.VEHICLE, dischargeNode.vehicle.i3dMappings, dischargeNode.vehicle)

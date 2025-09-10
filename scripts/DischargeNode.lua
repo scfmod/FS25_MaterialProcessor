@@ -65,6 +65,7 @@
 ---@field playSound boolean
 ---@field fillLevelSoundThreshold number
 ---@field fillLevelSoundThresholdIsGreater boolean
+---@field fillLevelSoundEnabledIfNotProcessing boolean
 ---@field fillLevelSample? table
 ---
 ---@field canFillOwnVehicle boolean
@@ -129,6 +130,7 @@ function DischargeNode.registerXMLPaths(schema, key)
     SoundManager.registerSampleXMLPaths(schema, key, 'fillLevelSound')
     schema:register(XMLValueType.FLOAT, key .. '.fillLevelSound#threshold', '', 0.5)
     schema:register(XMLValueType.BOOL, key .. '.fillLevelSound#thresholdIsGreater', '', true)
+    schema:register(XMLValueType.BOOL, key .. '.fillLevelSound#enabledIfNotProcessing', '', true)
     schema:register(XMLValueType.BOOL, key .. ".dischargeSound#overwriteSharedSound", "Overwrite shared discharge sound with sound defined in discharge node", false)
     AnimationManager.registerAnimationNodesXMLPaths(schema, key .. ".animationNodes")
     AnimationManager.registerAnimationNodesXMLPaths(schema, key .. ".effectAnimationNodes")
@@ -926,6 +928,10 @@ function DischargeNode:updateFillLevelSound(dt)
     local fillLevelPct = self:getFillLevelPercentage()
     local playSample = (self.fillLevelSoundThresholdIsGreater and fillLevelPct > self.fillLevelSoundThreshold) or (not self.fillLevelSoundThresholdIsGreater and fillLevelPct < self.fillLevelSoundThreshold)
     local isPlaying = g_soundManager:getIsSamplePlaying(self.fillLevelSample)
+
+    if not self.fillLevelSoundEnabledIfNotProcessing and not self.vehicle:getIsProcessingEnabled() then
+        playSample = false
+    end
 
     if playSample and not isPlaying then
         g_soundManager:playSample(self.fillLevelSample)

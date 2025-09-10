@@ -120,13 +120,14 @@ vehicle.materialProcessor.dischargeNodes.node(%).fillLevelSound
 ```
 
 Play sound depending on the fill level percentage.
-Same as a normal vehicle sample entry, but with two additional attributes.
+Same as a normal vehicle sample entry, but with additional attributes.
 
 ### Attributes
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
 | threshold | float | No | ```0.5```| Defines at which fillUnit fill level percentage the sound is triggered |
 | thresholdIsGreater | boolean | No  | ```true``` | If true the sound is triggered above threshold, if not then below threshold |
+| enabledIfNotProcessing | boolean | No | ```true``` | Determine whether sound can be played if the processor is active or not |
 
 ### Example
 ```xml
