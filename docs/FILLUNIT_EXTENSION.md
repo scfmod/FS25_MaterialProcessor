@@ -42,7 +42,9 @@ Trigger object changes based on the fill level percentage.
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
 | threshold | float | No | ```0.9```| Defines at which fillUnit fill level percentage the object changes |
-
+| thresholdIsGreater | boolean | No  | ```true``` | If true the object changes are activated above threshold, if not then below threshold |
+| requiresPoweredOn | boolean | No | ```true``` | |
+| requiresTurnedOn | boolean | No | ```false``` | |
 
 ### Example
 ```xml

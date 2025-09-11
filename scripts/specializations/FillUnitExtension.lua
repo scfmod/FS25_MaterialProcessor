@@ -6,6 +6,9 @@
 ---@field soundRequiresPoweredOn boolean
 ---@field sample? table
 ---@field fillLevelObjectChangeThreshold number
+---@field fillLevelObjectChangeThresholdIsGreater number
+---@field fillLevelObjectChangeRequiresTurnedOn boolean
+---@field fillLevelObjectChangeRequiresPoweredOn boolean
 ---@field fillLevelObjectChanges? table
 
 ---@class FillUnitExtension_spec
@@ -31,13 +34,16 @@ function FillUnitExtension.initSpecialization()
     schema:register(XMLValueType.INT, basePath .. '#fillUnitIndex')
 
     SoundManager.registerSampleXMLPaths(schema, basePath, "fillLevelSound")
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresTurnedOn', '', false)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresPoweredOn', '', true)
     schema:register(XMLValueType.FLOAT, basePath .. '.fillLevelSound#threshold', '', 0.9)
     schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#thresholdIsGreater', '', true)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresTurnedOn', '', false)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresPoweredOn', '', true)
 
-    schema:register(XMLValueType.FLOAT, basePath .. '.fillLevelObjectChanges#threshold', 'Defines at which fillUnit fill level percentage the object changes', 0.9)
     ObjectChangeUtil.registerObjectChangeXMLPaths(schema, basePath .. ".fillLevelObjectChanges")
+    schema:register(XMLValueType.FLOAT, basePath .. '.fillLevelObjectChanges#threshold', 'Defines at which fillUnit fill level percentage the object changes', 0.9)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#thresholdIsGreater', '', true)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#requiresTurnedOn', '', false)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#requiresPoweredOn', '', true)
 
     schema:setXMLSpecializationType()
 end
@@ -68,11 +74,13 @@ function FillUnitExtension:onLoad()
             return
         end
 
-        entry.soundRequiresPoweredOn = xmlFile:getValue(key .. '.fillLevelSound#requiresPoweredOn', true)
-        entry.soundRequiresTurnedOn = xmlFile:getValue(key .. '.fillLevelSound#requiresTurnedOn', false)
-        entry.soundThreshold = xmlFile:getValue(key .. '.fillLevelSound#threshold', 0.9)
-        entry.soundThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelSound#thresholdIsGreater', true)
-        entry.sample = g_soundManager:loadSampleFromXML(xmlFile, key, "fillLevelSound", self.baseDirectory, self.components, 0, AudioGroup.VEHICLE, self.i3dMappings, self)
+        if self.isClient then
+            entry.soundRequiresPoweredOn = xmlFile:getValue(key .. '.fillLevelSound#requiresPoweredOn', true)
+            entry.soundRequiresTurnedOn = xmlFile:getValue(key .. '.fillLevelSound#requiresTurnedOn', false)
+            entry.soundThreshold = xmlFile:getValue(key .. '.fillLevelSound#threshold', 0.9)
+            entry.soundThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelSound#thresholdIsGreater', true)
+            entry.sample = g_soundManager:loadSampleFromXML(xmlFile, key, "fillLevelSound", self.baseDirectory, self.components, 0, AudioGroup.VEHICLE, self.i3dMappings, self)
+        end
 
         entry.fillLevelObjectChanges = {}
         ObjectChangeUtil.loadObjectChangeFromXML(xmlFile, key .. '.fillLevelObjectChanges', entry.fillLevelObjectChanges, self.components, self)
@@ -81,6 +89,9 @@ function FillUnitExtension:onLoad()
             entry.fillLevelObjectChanges = nil
         else
             entry.fillLevelObjectChangeThreshold = xmlFile:getValue(key .. '.fillLevelObjectChanges#threshold', 0.9)
+            entry.fillLevelObjectChangeThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelObjectChanges#thresholdIsGreater', true)
+            entry.fillLevelObjectChangeRequiresPoweredOn = xmlFile:getValue(key .. '.fillLevelObjectChanges#requiresPoweredOn', true)
+            entry.fillLevelObjectChangeRequiresTurnedOn = xmlFile:getValue(key .. '.fillLevelObjectChanges#requiresTurnedOn', false)
             ObjectChangeUtil.setObjectChanges(entry.fillLevelObjectChanges, false, self, self.setMovingToolDirty)
         end
 
@@ -102,40 +113,46 @@ function FillUnitExtension:onUpdateTick(dt)
     local spec = self[FillUnitExtension.SPEC_NAME]
 
     for _, entry in ipairs(spec.fillUnitEntries) do
-        if entry.fillLevelObjectChanges ~= nil then
-            local fillLevelPct = self:getFillUnitFillLevelPercentage(entry.fillUnitIndex) or 0
-            ObjectChangeUtil.setObjectChanges(entry.fillLevelObjectChanges, fillLevelPct > entry.fillLevelObjectChangeThreshold, self, self.setMovingToolDirty)
+        local fillLevelPct = self:getFillUnitFillLevelPercentage(entry.fillUnitIndex) or 0
+        local isPowered = self:getIsPowered()
+        ---@type boolean?
+        local isTurnedOn
+
+        if self.getIsTurnedOn ~= nil then
+            isTurnedOn = self:getIsTurnedOn()
         end
 
-        FillUnitExtension.updateFillLevelSound(self, entry)
+        if entry.fillLevelObjectChanges ~= nil then
+            local isActive = (entry.fillLevelObjectChangeThresholdIsGreater and fillLevelPct > entry.fillLevelObjectChangeThreshold) or (not entry.fillLevelObjectChangeThresholdIsGreater and fillLevelPct < entry.fillLevelObjectChangeThreshold)
 
-        if self.isClient then
-            if entry.sample ~= nil and g_soundManager:getIsSamplePlaying(entry.sample) then
+            if entry.fillLevelObjectChangeRequiresTurnedOn and isTurnedOn == false then
+                isActive = false
+            elseif entry.fillLevelObjectChangeRequiresPoweredOn and not isPowered then
+                isActive = false
+            end
+
+            ObjectChangeUtil.setObjectChanges(entry.fillLevelObjectChanges, isActive, self, self.setMovingToolDirty)
+        end
+
+        if self.isClient and entry.sample ~= nil then
+            local playSample = (entry.soundThresholdIsGreater and fillLevelPct > entry.soundThreshold) or (not entry.soundThresholdIsGreater and fillLevelPct < entry.soundThreshold)
+            local isPlaying = g_soundManager:getIsSamplePlaying(entry.sample)
+
+            if entry.soundRequiresTurnedOn and isTurnedOn == false then
+                playSample = false
+            elseif entry.soundRequiresPoweredOn and not isPowered then
+                playSample = false
+            end
+
+            if playSample and not isPlaying then
+                g_soundManager:playSample(entry.sample)
+            elseif not playSample and isPlaying then
+                g_soundManager:stopSample(entry.sample)
+            end
+
+            if g_soundManager:getIsSamplePlaying(entry.sample) then
                 self:raiseActive()
             end
         end
-    end
-end
-
----@param entry FillUnitEntry
-function FillUnitExtension:updateFillLevelSound(entry)
-    if not self.isClient or not entry.sample then
-        return
-    end
-
-    local fillLevelPct = self:getFillUnitFillLevelPercentage(entry.fillUnitIndex) or 0
-    local playSample = (entry.soundThresholdIsGreater and fillLevelPct > entry.soundThreshold) or (not entry.soundThresholdIsGreater and fillLevelPct < entry.soundThreshold)
-    local isPlaying = g_soundManager:getIsSamplePlaying(entry.sample)
-
-    if entry.soundRequiresTurnedOn and self.getIsTurnedOn ~= nil and not self:getIsTurnedOn() then
-        playSample = false
-    elseif entry.soundRequiresPoweredOn and not self:getIsPowered() then
-        playSample = false
-    end
-
-    if playSample and not isPlaying then
-        g_soundManager:playSample(entry.sample)
-    elseif not playSample and isPlaying then
-        g_soundManager:stopSample(entry.sample)
     end
 end
