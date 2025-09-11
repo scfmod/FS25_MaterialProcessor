@@ -82,5 +82,5 @@ When [FS25_interactiveControl](https://www.farming-simulator.com/mod.php?mod_id=
 
 | Function | Description |
 |----------|-------------|
-| PROCESSOR_CONFIGURATION | Open control panel dialog for changing configuration. |
+| PROCESSOR_CONTROL_PANEL | Open control panel dialog for changing configuration. |
 | PROCESSOR_TOGGLE_DISCHARGE_GROUND | Toggle discharge to ground. Only applicable for custom discharge nodes. |
