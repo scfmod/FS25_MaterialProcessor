@@ -1,5 +1,7 @@
 # [Documentation](./INDEX.md) > Split Processor
 
+Process one single input fillUnit and split the value into multiple output fillUnits.
+
 # Table of Contents
 
 - [Processor](#processor)
@@ -95,7 +97,7 @@ vehicle.materialProcessor.configurations.configuration(%).input
 | Name          | Type   | Required | Default | Description                  |
 |---------------|--------|----------|---------|------------------------------|
 | fillType      | string | Yes      |         | Name of filltype used for input |
-| fillUnitIndex | int    | Yes      |         | Input vehicle fillUnitIndex |
+| fillUnit      | int    | Yes      |         | Input vehicle fillUnitIndex |
 | displayNode   | node   | No       |         | Set custom node for HUD display position | 
 | displayNodeOffsetY | float | No   |         | Y offset position for HUD display |
 

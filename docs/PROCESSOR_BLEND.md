@@ -1,5 +1,7 @@
 # [Documentation](./INDEX.md) > Blend Processor
 
+Process multiple input fillUnits into one output fillUnit.
+
 # Table of Contents
 
 - [Processor](#processor)

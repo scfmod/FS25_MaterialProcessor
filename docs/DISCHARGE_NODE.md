@@ -1,4 +1,4 @@
-## Custom discharge node
+# [Documentation](./INDEX.md) > Custom discharge node
 
 ```
 vehicle.materialProcessor.dischargeNodes.node(%)
