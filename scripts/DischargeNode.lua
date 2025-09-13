@@ -483,11 +483,12 @@ function DischargeNode:updateTick(dt)
             local canDischarge = false
             local fillLevel = self:getFillLevel()
 
-            if fillLevel > 0 and self.vehicle:getIsProcessingEnabled() then
+            if self.vehicle:getIsProcessingEnabled() then
                 if self.currentDischargeState == Dischargeable.DISCHARGE_STATE_GROUND then
-                    canDischarge = self:getCanDischargeToGround() and self:getCanDischargeToLand() and self:getCanDischargeAtPosition()
+                    local minLiterToDrop = g_densityMapHeightManager:getMinValidLiterValue(self:getDischargeFillType())
+                    canDischarge = (fillLevel > minLiterToDrop or not self.stopDischargeIfNotPossible) and self:getCanDischargeToGround() and self:getCanDischargeToLand() and self:getCanDischargeAtPosition()
                 else
-                    canDischarge = self:getCanDischargeToObject()
+                    canDischarge = (fillLevel > 0 or not self.stopDischargeIfNotPossible) and self:getCanDischargeToObject()
                 end
             end
 
@@ -565,7 +566,7 @@ function DischargeNode:dischargeToGround(emptyLiters)
     local fillLevel = self:getFillLevel()
     local minLiterToDrop = g_densityMapHeightManager:getMinValidLiterValue(fillType)
 
-    self.litersToDrop = math.min(self.litersToDrop + emptyLiters, math.max(self.emptySpeed * 250, minLiterToDrop))
+    self.litersToDrop = math.min(self.litersToDrop + emptyLiters, math.max(self.emptySpeed * 250, minLiterToDrop), fillLevel)
 
     local minDropReached = self.litersToDrop > minLiterToDrop
     local hasMinDropFillLevel = fillLevel > minLiterToDrop
