@@ -124,7 +124,12 @@ function ProcessorDialog:populateCellForItemInSection(list, section, index, cell
             cell:getAttribute('title'):setText(configuration.displayName)
             cell:getAttribute('image'):setImageFilename(unit.fillType.hudOverlayFilename)
             cell:getAttribute('text'):setText(unit.fillType.title)
-            cell:getAttribute('info'):setText(string.format('%i l/s', configuration.litersPerSecond))
+
+            if configuration.litersPerSecondText ~= nil then
+                cell:getAttribute('info'):setText(configuration.litersPerSecondText)
+            else
+                cell:getAttribute('info'):setText(string.format('%i l/s', configuration.litersPerSecond))
+            end
         end
     else
         local unit = self.units[index]

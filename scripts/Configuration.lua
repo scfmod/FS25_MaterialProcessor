@@ -3,6 +3,7 @@
 ---@field index number
 ---
 ---@field displayName string
+---@field litersPerSecondText? string
 ---@field litersPerSecond number
 ---@field litersPerMs number
 ---@field fillUnitToConfigurationUnit table<number, ConfigurationUnit>
@@ -13,6 +14,7 @@ Configuration = {}
 function Configuration.registerXMLPaths(schema, key)
     schema:register(XMLValueType.L10N_STRING, key .. '#name', 'Name to display in GUI')
     schema:register(XMLValueType.INT, key .. '#litersPerSecond', 'Liters processed per second', 400, true)
+    schema:register(XMLValueType.L10N_STRING, key .. '#litersPerSecondText', 'Set custom text in GUI')
 
     BlendConfiguration.registerXMLPaths(schema, key)
     SplitConfiguration.registerXMLPaths(schema, key)
@@ -57,6 +59,8 @@ function Configuration:load(xmlFile, key)
         self.litersPerSecond = litersPerSecond
         self.litersPerMs = self.litersPerSecond / 1000
     end
+
+    self.litersPerSecondText = xmlFile:getValue(key .. '#litersPerSecondText', nil, self.processor.vehicle.customEnvironment)
 end
 
 function Configuration:activate()

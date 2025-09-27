@@ -70,6 +70,7 @@ vehicle.materialProcessor.configurations.configuration(%)
 | Name            | Type   | Required | Default   | Description                  |
 |-----------------|--------|----------|-----------|------------------------------|
 | litersPerSecond | int    | Yes      | ```400``` | Amount of liters per second produced |
+| litersPerSecondText|string|No       |           | Set custom liters per second text in GUI |
 | name            | string | No       |           | Display name in GUI |
 
 
