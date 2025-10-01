@@ -78,7 +78,7 @@ Trigger object changes based on the fill level percentage.
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
 | threshold | float | No | ```0.9```| Defines at which fillUnit fill level percentage the object changes |
-| thresholdCondition | boolean | No  | ```>``` | Object changes are activated based on defined condition and threshold value. Possible values: ```<```, ```=```, ```>``` |
+| thresholdCondition | string | No  | ```>``` | Object changes are activated based on defined condition and threshold value. Possible values: ```<```, ```=```, ```>``` |
 | requiresPoweredOn | boolean | No | ```true``` | Require vehicle to be powered on in order for object changes can be active |
 | requiresTurnedOn | boolean | No | ```false``` | Require vehicle to be turned on in order for object changes can be active [^1] |
 
@@ -110,7 +110,7 @@ Same as a normal vehicle sample entry, but with additional attributes.
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
 | threshold | float | No | ```0.9```| Defines at which fillUnit fill level percentage the sound is triggered |
-| thresholdCondition | boolean | No  | ```>``` | Sound starts playing based on defined condition and threshold value. Possible values: ```<```, ```=```, ```>``` |
+| thresholdCondition | string | No  | ```>``` | Sound starts playing based on defined condition and threshold value. Possible values: ```<```, ```=```, ```>``` |
 | requiresPoweredOn | boolean | No | ```true``` | Require vehicle to be powered on in order for sound can be playing |
 | requiresTurnedOn | boolean | No | ```false``` | Require vehicle to be turned on in order for sound can be playing [^1] |
 
