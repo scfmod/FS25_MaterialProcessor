@@ -1,12 +1,12 @@
 ---@class FillUnitEntry
 ---@field fillUnitIndex number
 ---@field soundThreshold number
----@field soundThresholdIsGreater boolean
+---@field soundThresholdCondition Condition
 ---@field soundRequiresTurnedOn boolean
 ---@field soundRequiresPoweredOn boolean
 ---@field sample? table
 ---@field fillLevelObjectChangeThreshold number
----@field fillLevelObjectChangeThresholdIsGreater number
+---@field fillLevelObjectChangeThresholdCondition Condition
 ---@field fillLevelObjectChangeRequiresTurnedOn boolean
 ---@field fillLevelObjectChangeRequiresPoweredOn boolean
 ---@field fillLevelObjectChanges? table
@@ -34,16 +34,18 @@ function FillUnitExtension.initSpecialization()
     schema:register(XMLValueType.INT, basePath .. '#fillUnitIndex')
 
     SoundManager.registerSampleXMLPaths(schema, basePath, "fillLevelSound")
-    schema:register(XMLValueType.FLOAT, basePath .. '.fillLevelSound#threshold', '', 0.9)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#thresholdIsGreater', '', true)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresTurnedOn', '', false)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresPoweredOn', '', true)
+    schema:register(XMLValueType.FLOAT, basePath .. '.fillLevelSound#threshold', 'Defines at which fillUnit fill level percentage the sound is triggered', 0.9)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#thresholdIsGreater', 'Deprecated', true)
+    schema:register(XMLValueType.STRING, basePath .. '.fillLevelSound#thresholdCondition', 'Sound starts playing based on defined condition and threshold value. Possible values: "<", "=", ">"', '>')
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresTurnedOn', 'Require vehicle to be powered on in order for sound can be playing', false)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelSound#requiresPoweredOn', 'Require vehicle to be turned on in order for sound can be playing (if vehicle has TurnOn specialization)', true)
 
     ObjectChangeUtil.registerObjectChangeXMLPaths(schema, basePath .. ".fillLevelObjectChanges")
     schema:register(XMLValueType.FLOAT, basePath .. '.fillLevelObjectChanges#threshold', 'Defines at which fillUnit fill level percentage the object changes', 0.9)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#thresholdIsGreater', '', true)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#requiresTurnedOn', '', false)
-    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#requiresPoweredOn', '', true)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#thresholdIsGreater', 'Deprecated', true)
+    schema:register(XMLValueType.STRING, basePath .. '.fillLevelObjectChanges#thresholdCondition', 'Object changes are activated based on defined condition and threshold value. Possible values: "<", "=", ">"', '>')
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#requiresTurnedOn', 'Require vehicle to be powered on in order for object changes can be active', false)
+    schema:register(XMLValueType.BOOL, basePath .. '.fillLevelObjectChanges#requiresPoweredOn', 'Require vehicle to be turned on in order for object changes can be active (if vehicle has TurnOn specialization)', true)
 
     schema:setXMLSpecializationType()
 end
@@ -77,8 +79,15 @@ function FillUnitExtension:onLoad()
         if self.isClient then
             entry.soundRequiresPoweredOn = xmlFile:getValue(key .. '.fillLevelSound#requiresPoweredOn', true)
             entry.soundRequiresTurnedOn = xmlFile:getValue(key .. '.fillLevelSound#requiresTurnedOn', false)
-            entry.soundThreshold = xmlFile:getValue(key .. '.fillLevelSound#threshold', 0.9)
-            entry.soundThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelSound#thresholdIsGreater', true)
+            entry.soundThreshold = MathUtil.round(xmlFile:getValue(key .. '.fillLevelSound#threshold', 0.9), 3)
+            entry.soundThresholdCondition = Condition.GREATER_THAN
+
+            if xmlFile:hasProperty(key .. '.fillLevelSound#thresholdCondition') then
+                entry.soundThresholdCondition = ProcessorUtils.getXMLCondition(xmlFile, key .. '.fillLevelSound#thresholdCondition', entry.soundThresholdCondition)
+            elseif xmlFile:getValue(key .. '.fillLevelSound#thresholdIsGreater') == false then
+                entry.soundThresholdCondition = Condition.LESSER_THAN
+            end
+
             entry.sample = g_soundManager:loadSampleFromXML(xmlFile, key, "fillLevelSound", self.baseDirectory, self.components, 0, AudioGroup.VEHICLE, self.i3dMappings, self)
         end
 
@@ -88,8 +97,15 @@ function FillUnitExtension:onLoad()
         if #entry.fillLevelObjectChanges == 0 then
             entry.fillLevelObjectChanges = nil
         else
-            entry.fillLevelObjectChangeThreshold = xmlFile:getValue(key .. '.fillLevelObjectChanges#threshold', 0.9)
-            entry.fillLevelObjectChangeThresholdIsGreater = xmlFile:getValue(key .. '.fillLevelObjectChanges#thresholdIsGreater', true)
+            entry.fillLevelObjectChangeThreshold = MathUtil.round(xmlFile:getValue(key .. '.fillLevelObjectChanges#threshold', 0.9), 3)
+            entry.fillLevelObjectChangeThresholdCondition = Condition.GREATER_THAN
+
+            if xmlFile:hasProperty(key .. '.fillLevelObjectChanges#thresholdCondition') then
+                entry.fillLevelObjectChangeThresholdCondition = ProcessorUtils.getXMLCondition(xmlFile, key .. '.fillLevelObjectChanges#thresholdCondition', entry.fillLevelObjectChangeThresholdCondition)
+            elseif xmlFile:getValue(key .. '.fillLevelObjectChanges#thresholdIsGreater') == false then
+                entry.fillLevelObjectChangeThresholdCondition = Condition.LESSER_THAN
+            end
+
             entry.fillLevelObjectChangeRequiresPoweredOn = xmlFile:getValue(key .. '.fillLevelObjectChanges#requiresPoweredOn', true)
             entry.fillLevelObjectChangeRequiresTurnedOn = xmlFile:getValue(key .. '.fillLevelObjectChanges#requiresTurnedOn', false)
             ObjectChangeUtil.setObjectChanges(entry.fillLevelObjectChanges, false, self, self.setMovingToolDirty)
@@ -113,7 +129,7 @@ function FillUnitExtension:onUpdateTick(dt)
     local spec = self[FillUnitExtension.SPEC_NAME]
 
     for _, entry in ipairs(spec.fillUnitEntries) do
-        local fillLevelPct = self:getFillUnitFillLevelPercentage(entry.fillUnitIndex) or 0
+        local fillLevelPct = MathUtil.round(self:getFillUnitFillLevelPercentage(entry.fillUnitIndex) or 0, 3)
         local isPowered = self:getIsPowered()
         ---@type boolean?
         local isTurnedOn
@@ -123,7 +139,7 @@ function FillUnitExtension:onUpdateTick(dt)
         end
 
         if entry.fillLevelObjectChanges ~= nil then
-            local isActive = (entry.fillLevelObjectChangeThresholdIsGreater and fillLevelPct > entry.fillLevelObjectChangeThreshold) or (not entry.fillLevelObjectChangeThresholdIsGreater and fillLevelPct < entry.fillLevelObjectChangeThreshold)
+            local isActive = ProcessorUtils.getIsConditionFulfilled(fillLevelPct, entry.fillLevelObjectChangeThreshold, entry.fillLevelObjectChangeThresholdCondition)
 
             if entry.fillLevelObjectChangeRequiresTurnedOn and isTurnedOn == false then
                 isActive = false
@@ -135,7 +151,7 @@ function FillUnitExtension:onUpdateTick(dt)
         end
 
         if self.isClient and entry.sample ~= nil then
-            local playSample = (entry.soundThresholdIsGreater and fillLevelPct > entry.soundThreshold) or (not entry.soundThresholdIsGreater and fillLevelPct < entry.soundThreshold)
+            local playSample = ProcessorUtils.getIsConditionFulfilled(fillLevelPct, entry.soundThreshold, entry.soundThresholdCondition)
             local isPlaying = g_soundManager:getIsSamplePlaying(entry.sample)
 
             if entry.soundRequiresTurnedOn and isTurnedOn == false then

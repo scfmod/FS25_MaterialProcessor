@@ -1,3 +1,10 @@
+---@enum Condition
+Condition = {
+    LESSER_THAN = 1,
+    EQUAL_TO = 2,
+    GREATER_THAN = 3
+}
+
 ---@class ProcessorUtils
 ProcessorUtils = {}
 
@@ -123,5 +130,41 @@ function ProcessorUtils.loadDischargeObjectChanges(node, xmlFile, key)
         node.stateObjectChanges = nil
     else
         ObjectChangeUtil.setObjectChanges(node.stateObjectChanges, false, node.vehicle, node.vehicle.setMovingToolDirty)
+    end
+end
+
+---@param xmlFile XMLFile
+---@param key string
+---@param defaultValue? Condition
+---@return Condition
+---@nodiscard
+function ProcessorUtils.getXMLCondition(xmlFile, key, defaultValue)
+    defaultValue = defaultValue or Condition.GREATER_THAN
+
+    local value = xmlFile:getValue(key)
+
+    if value == '<' then
+        return Condition.LESSER_THAN
+    elseif value == '=' then
+        return Condition.EQUAL_TO
+    elseif value == '>' then
+        return Condition.GREATER_THAN
+    end
+
+    return defaultValue
+end
+
+---@param lhs number
+---@param rhs number
+---@param condition Condition
+---@return boolean
+---@nodiscard
+function ProcessorUtils.getIsConditionFulfilled(lhs, rhs, condition)
+    if condition == Condition.LESSER_THAN then
+        return lhs < rhs
+    elseif condition == Condition.EQUAL_TO then
+        return lhs == rhs
+    else
+        return lhs > rhs
     end
 end

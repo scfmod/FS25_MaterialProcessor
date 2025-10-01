@@ -36,10 +36,14 @@ Utilize additional features for base game FillUnit specialization, enabling play
 <vehicle>
     <fillUnitExtension>
         <fillUnit fillUnitIndex="2">
-            <!-- Play alarm sound when fill level is below 10% -->
-            <fillLevelSound threshold="0.1" thresholdIsGreater="false" template="rollbeltAlarm" linkNode="alarmSoundNode2" />
+            <!-- Play alarm sound when fill level is equal to 0% -->
+            <fillLevelSound threshold="0" thresholdCondition="=" template="rollbeltAlarm" linkNode="alarmSoundNode3" />
         </fillUnit>
         <fillUnit fillUnitIndex="3">
+            <!-- Play alarm sound when fill level is below 10% -->
+            <fillLevelSound threshold="0.1" thresholdCondition="<" template="rollbeltAlarm" linkNode="alarmSoundNode2" />
+        </fillUnit>
+        <fillUnit fillUnitIndex="4">
             <!-- Play alarm sound and activate object changes when fill level is above 85% -->
             <fillLevelSound threshold="0.85" template="rollbeltAlarm" linkNode="alarmSoundNode" />
             <fillLevelObjectChanges threshold="0.85">
@@ -74,7 +78,7 @@ Trigger object changes based on the fill level percentage.
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
 | threshold | float | No | ```0.9```| Defines at which fillUnit fill level percentage the object changes |
-| thresholdIsGreater | boolean | No  | ```true``` | If true the object changes are activated above threshold, if not then below threshold |
+| thresholdCondition | boolean | No  | ```>``` | Object changes are activated based on defined condition and threshold value. Possible values: ```<```, ```=```, ```>``` |
 | requiresPoweredOn | boolean | No | ```true``` | Require vehicle to be powered on in order for object changes can be active |
 | requiresTurnedOn | boolean | No | ```false``` | Require vehicle to be turned on in order for object changes can be active [^1] |
 
@@ -84,6 +88,7 @@ Trigger object changes based on the fill level percentage.
 <vehicle>
     <fillUnitExtension>
         <fillUnit fillUnitIndex="3">
+            <!-- Object changes are active when fill level percentage is above 85% -->
             <fillLevelObjectChanges threshold="0.85">
                 <objectChange node="alarmBeacon" visibilityActive="true" visibilityInactive="false" />
             </fillLevelObjectChanges>
@@ -105,7 +110,7 @@ Same as a normal vehicle sample entry, but with additional attributes.
 | Name      | Type  | Required | Default | Description              |
 |-----------|-------|----|-----------|------------------------------|
 | threshold | float | No | ```0.9```| Defines at which fillUnit fill level percentage the sound is triggered |
-| thresholdIsGreater | boolean | No  | ```true``` | If true the sound is triggered above threshold, if not then below threshold |
+| thresholdCondition | boolean | No  | ```>``` | Sound starts playing based on defined condition and threshold value. Possible values: ```<```, ```=```, ```>``` |
 | requiresPoweredOn | boolean | No | ```true``` | Require vehicle to be powered on in order for sound can be playing |
 | requiresTurnedOn | boolean | No | ```false``` | Require vehicle to be turned on in order for sound can be playing [^1] |
 
@@ -115,6 +120,7 @@ Same as a normal vehicle sample entry, but with additional attributes.
 <vehicle>
     <fillUnitExtension>
         <fillUnit fillUnitIndex="3">
+            <!-- Sound starts playing when fill level percentage is above 95% -->
             <fillLevelSound threshold="0.95" template="rollbeltAlarm" linkNode="alarmSoundNode" />
         </fillUnit>
     </fillUnitExtension>
