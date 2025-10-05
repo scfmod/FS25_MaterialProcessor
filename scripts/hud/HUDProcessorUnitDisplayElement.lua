@@ -87,7 +87,7 @@ end
 ---@param unit ConfigurationUnit
 ---@param title string
 function HUDProcessorUnitDisplayElement:drawUnit(unit, title)
-    local valid, x, y, offsetY = unit:getDisplayPosition()
+    local valid, x, y = unit:getDisplayPosition()
 
     if valid then
         x = x - self.elements.root.absSize[1] / 2
@@ -96,7 +96,7 @@ function HUDProcessorUnitDisplayElement:drawUnit(unit, title)
         self.elements.text:setText(unit.fillType.title)
         self.elements.image:setImageFilename(unit.fillType.hudOverlayFilename)
 
-        self.elements.root:setPosition(x, y + offsetY)
+        self.elements.root:setPosition(x, y)
         self.elements.root:draw()
     end
 end

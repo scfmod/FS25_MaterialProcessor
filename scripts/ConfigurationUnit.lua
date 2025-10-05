@@ -168,18 +168,18 @@ end
 ---@return boolean isValid
 ---@return number x
 ---@return number y
----@return number offsetY
 function ConfigurationUnit:getDisplayPosition()
     local node, offsetY = self:getDisplayNode()
 
     if node ~= nil then
         local x, y, z = getWorldTranslation(node)
+        y = y + offsetY
         local sx, sy, sz = project(x, y, z)
 
         if sx > -1 and sx < 2 and sy > -1 and sy < 2 and sz <= 1 then
-            return true, sx, sy, offsetY
+            return true, sx, sy
         end
     end
 
-    return false, 0, 0, offsetY
+    return false, 0, 0
 end
