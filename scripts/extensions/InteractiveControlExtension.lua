@@ -4,8 +4,8 @@
 ---@class InteractiveFunctionsParams
 ---@field posFunc fun(target: MaterialProcessor, data: any, noEventSend: boolean | nil)
 ---@field negFunc? fun(target: MaterialProcessor, data: any, noEventSend: boolean | nil)
----@field updateFunc? fun(target: MaterialProcessor): boolean | nil
----@field isBlockedFunc? fun(target: MaterialProcessor): boolean
+---@field updateFunc? fun(target: MaterialProcessor): boolean?
+---@field isBlockedFunc? fun(target: MaterialProcessor): boolean?
 
 ---@class InteractiveControlExtension
 InteractiveControlExtension = {}
@@ -44,23 +44,23 @@ end
 function InteractiveControlExtension:registerConfigurationFunction(icf)
     if icf.addFunction('PROCESSOR_CONTROL_PANEL',
             {
-                posFunc = function (target)
-                    ---@type MaterialProcessor_spec
-                    local spec = target[MaterialProcessor.SPEC_NAME]
+                posFunc = function (target, data, noEventSend)
+                    if noEventSend then
+                        return
+                    end
 
-                    if spec ~= nil then
+                    if target.isClient and target[MaterialProcessor.SPEC_NAME] ~= nil then
                         MaterialProcessor.actionEventOpenDialog(target)
                     end
                 end,
                 isBlockedFunc = function (target)
-                    ---@type MaterialProcessor_spec
-                    local spec = target[MaterialProcessor.SPEC_NAME]
+                    if g_client ~= nil and target.getProcessor ~= nil then
+                        local processor = target:getProcessor()
 
-                    if spec ~= nil then
-                        return #spec.processor.configurations > 0
+                        return #processor.configurations > 0
                     end
 
-                    return false
+                    return nil
                 end
             }
         ) then
@@ -72,27 +72,36 @@ end
 function InteractiveControlExtension:registerToggleDischargeToGroundFunction(icf)
     if icf.addFunction('PROCESSOR_TOGGLE_DISCHARGE_GROUND',
             {
-                posFunc = function (target)
-                    ---@type MaterialProcessor_spec
-                    local spec = target[MaterialProcessor.SPEC_NAME]
+                posFunc = function (target, data, noEventSend)
+                    if noEventSend then
+                        return
+                    end
 
-                    if spec ~= nil and spec.processor.canToggleDischargeToGround then
-                        MaterialProcessor.actionEventToggleDischargeToGround(target)
+                    if target.getProcessor ~= nil then
+                        local processor = target:getProcessor()
+
+                        if processor.canToggleDischargeToGround then
+                            MaterialProcessor.actionEventToggleDischargeToGround(target)
+                        end
                     end
                 end,
                 updateFunc = function (target)
-                    ---@type MaterialProcessor_spec
-                    local spec = target[MaterialProcessor.SPEC_NAME]
+                    if target.getProcessor ~= nil then
+                        local processor = target:getProcessor()
 
-                    if spec ~= nil then
-                        return spec.processor.canDischargeToGround
+                        return processor.canDischargeToGround
                     end
+
+                    return nil
                 end,
                 isBlockedFunc = function (target)
-                    ---@type MaterialProcessor_spec
-                    local spec = target[MaterialProcessor.SPEC_NAME]
+                    if target.getProcessor ~= nil then
+                        local processor = target:getProcessor()
 
-                    return spec ~= nil and spec.processor.canToggleDischargeToGround
+                        return processor.canToggleDischargeToGround
+                    end
+
+                    return nil
                 end
             }
         ) then
