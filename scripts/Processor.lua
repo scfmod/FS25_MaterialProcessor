@@ -29,7 +29,7 @@ Processor.MAX_NUM_INDEX = 2 ^ Processor.SEND_NUM_BITS_INDEX - 1
 ---@param schema XMLSchema
 ---@param key string
 function Processor.registerXMLPaths(schema, key)
-    schema:register(XMLValueType.STRING, key .. '#type', 'Processor type (split / blend)', nil, true)
+    schema:register(XMLValueType.STRING, key .. '#type', 'Processor type (split / multisplit / blend)', nil, true)
     schema:register(XMLValueType.BOOL, key .. '#needsToBeTurnedOn', 'Vehicle needs to be turned on in order for processor to work', true)
     schema:register(XMLValueType.BOOL, key .. '#needsToBePoweredOn', 'Vehicle needs to be powered on in order for processor to work', true)
     schema:register(XMLValueType.BOOL, key .. '#defaultCanDischargeToGround', 'Default value for discharging to ground', false)

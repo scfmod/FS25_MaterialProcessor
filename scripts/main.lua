@@ -14,6 +14,8 @@ source(g_currentModDirectory .. 'scripts/processors/BlendProcessor.lua')
 source(g_currentModDirectory .. 'scripts/processors/BlendConfiguration.lua')
 source(g_currentModDirectory .. 'scripts/processors/SplitProcessor.lua')
 source(g_currentModDirectory .. 'scripts/processors/SplitConfiguration.lua')
+source(g_currentModDirectory .. 'scripts/processors/MultisplitProcessor.lua')
+source(g_currentModDirectory .. 'scripts/processors/MultisplitConfiguration.lua')
 
 source(g_currentModDirectory .. 'scripts/extensions/InteractiveControlExtension.lua')
 

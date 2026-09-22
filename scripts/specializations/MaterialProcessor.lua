@@ -79,6 +79,8 @@ function MaterialProcessor:onLoad()
         spec.processor = SplitProcessor.new(self)
     elseif processorTypeName == BlendProcessor.TYPE_NAME then
         spec.processor = BlendProcessor.new(self)
+    elseif processorTypeName == MultisplitProcessor.TYPE_NAME then
+        spec.processor = MultisplitProcessor.new(self)
     else
         Logging.xmlError(xmlFile, 'Missing or invalid materialProcessor type "%s": vehicle.materialProcessor#type', tostring(processorTypeName))
         self.loadingState = VehicleLoadingState.ERROR

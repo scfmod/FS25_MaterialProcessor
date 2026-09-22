@@ -18,6 +18,7 @@ function Configuration.registerXMLPaths(schema, key)
 
     BlendConfiguration.registerXMLPaths(schema, key)
     SplitConfiguration.registerXMLPaths(schema, key)
+    MultisplitConfiguration.registerXMLPaths(schema, key)
 end
 
 ---@param index number
