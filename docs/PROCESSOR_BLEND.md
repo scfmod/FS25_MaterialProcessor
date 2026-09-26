@@ -36,9 +36,16 @@ Process multiple input fillUnits into one output fillUnit.
 | defaultCanDischargeToGround  | boolean | No       | ```false``` | Default value for discharging to ground setting [^2] |
 | canDischargeToGroundAnywhere | boolean | No       | ```false``` | Bypass land permissions when discharging to ground [^2] |
 | canDischargeToAnyObject      | boolean | No       | ```false``` | Bypass vehicle permissions when discharging to object/vehicle [^2] |
+| autoDetectEmptyThreshold     | float   | No       | ```20```    | Fill level (liters) at or below which a configuration unit is considered empty for the purpose of allowing switching configuration to relabel it. Applies to the output and every input. See the Split Processor docs for the full explanation and tuning guidance — the value depends on the `fillToGroundScale` of the fillTypes you use. Note: `splitAutoSelectConfigurationEnabled` and the automatic fillType-detection behavior it enables are Split processor only and have no effect here — there is no single incoming fillType for a Blend configuration (which combines several simultaneous inputs) to be auto-detected from. |
 
 [^1]: If the vehicle doesn't have a turn on function it will disregard this setting.
 [^2]: Only applies if custom discharge node(s) are used
+
+Switching configuration will never relabel a unit's fillType — output or any input — while it holds more than `autoDetectEmptyThreshold` liters. In the processor-config GUI dialog, the Apply button is hidden and double-clicking a configuration entry does nothing while any of the current configuration's units (the output and every input) still hold more than `autoDetectEmptyThreshold` liters; the dialog can still be opened to preview other configurations while a switch is blocked.
+
+Because switching does not relabel a non-empty output, that output stays locked to its previous fillType until it is emptied out. Processing checks this: if the output cannot currently accept its configured fillType, the processor will not process at all — no inputs are consumed and no material is lost — until the output is cleared.
+
+A unit that was still non-empty at the exact moment a configuration was selected (so left unlabelled) is re-checked every tick afterwards, not just at the moment of switching — once it drops to or below `autoDetectEmptyThreshold`, it is automatically relabelled to match the current configuration without needing another configuration switch to trigger it.
 
 ## Configurations
 

@@ -1,6 +1,7 @@
 <vehicle>
     <materialProcessor
         type="blend"
+		autoDetectEmptyThreshold="20"
         needsToBeTurnedOn="true"
         needsToBePoweredOn="true"
     >

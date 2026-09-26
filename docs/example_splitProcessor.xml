@@ -3,6 +3,7 @@
     <!-- needsToBeTurnedOn is only affected if vehicle has the TurnOn specialization -->
     <materialProcessor
         type="split"
+		splitAutoSelectConfigurationEnabled="false" autoDetectEmptyThreshold="20"
         needsToBeTurnedOn="true"
         needsToBePoweredOn="true"
         defaultCanDischargeToGround="false"
