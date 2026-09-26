@@ -86,6 +86,10 @@ function SplitProcessor:getCanUseOutputs(litersToProcess)
             if output:getAvailableCapacity() < targetLiters then
                 return false
             end
+
+            if not output:getCanReceiveFillType() then
+                return false
+            end
         end
     end
 
@@ -116,4 +120,103 @@ function SplitProcessor:process(dt)
     end
 
     return configuration.input:addFillLevel(-litersToProcess)
+end
+
+---@param dt number
+function SplitProcessor:updateTick(dt)
+    if self.splitAutoSelectConfigurationEnabled then
+        self:updateSupportedInputFillTypes()
+
+        if self.isServer then
+            self:autoSelectConfiguration()
+        end
+    end
+
+    self:superClass().updateTick(self, dt)
+end
+
+--- Keeps the input fillUnit's supportedFillTypes in sync with what is actually inside
+--- it: while empty, every crop any configuration knows how to process is accepted, so
+--- a fresh load of a different crop is not rejected and can be auto-detected. As soon
+--- as it is non-empty, supportedFillTypes is narrowed to only the crop already inside,
+--- so a different (but otherwise still "known") crop cannot be tipped in on top and
+--- silently relabel the whole tank.
+function SplitProcessor:updateSupportedInputFillTypes()
+    if not self.forceSetSupportedFillTypes then
+        return
+    end
+
+    local configuration = self.currentConfiguration
+
+    if configuration == nil then
+        return
+    end
+
+    local inputUnit = configuration:getUnit()
+
+    if inputUnit == nil or inputUnit.fillUnit == nil then
+        return
+    end
+
+    local fillUnit = inputUnit.fillUnit
+    local fillLevel = self.vehicle:getFillUnitFillLevel(fillUnit.fillUnitIndex) or 0
+
+    fillUnit.supportedFillTypes = {}
+
+    if fillLevel <= self.autoDetectEmptyThreshold then
+        for _, otherConfiguration in ipairs(self.configurations) do
+            local unit = otherConfiguration:getUnit()
+
+            if unit ~= nil and unit.fillType ~= nil then
+                fillUnit.supportedFillTypes[unit.fillType.index] = true
+            end
+        end
+    else
+        local currentFillType = self.vehicle:getFillUnitFillType(fillUnit.fillUnitIndex)
+
+        if currentFillType ~= nil and currentFillType ~= FillType.UNKNOWN then
+            fillUnit.supportedFillTypes[currentFillType] = true
+        elseif inputUnit.fillType ~= nil then
+            fillUnit.supportedFillTypes[inputUnit.fillType.index] = true
+        end
+    end
+end
+
+--- Automatically switches to whichever configuration's input fillType matches what is
+--- currently sitting in the input fillUnit, so the player does not need to manually
+--- select a configuration when a different crop is tipped into the hopper.
+function SplitProcessor:autoSelectConfiguration()
+    local configuration = self.currentConfiguration
+
+    if configuration == nil then
+        return
+    end
+
+    local inputUnit = configuration:getUnit()
+
+    if inputUnit == nil or inputUnit.fillUnit == nil or inputUnit.fillType == nil then
+        return
+    end
+
+    local fillUnitIndex = inputUnit.fillUnit.fillUnitIndex
+    local currentFillType = self.vehicle:getFillUnitFillType(fillUnitIndex)
+
+    if currentFillType == nil or currentFillType == FillType.UNKNOWN then
+        return
+    end
+
+    if currentFillType == inputUnit.fillType.index then
+        return
+    end
+
+    for index, otherConfiguration in ipairs(self.configurations) do
+        if index ~= self.currentConfigurationIndex then
+            local otherUnit = otherConfiguration:getUnit()
+
+            if otherUnit ~= nil and otherUnit.fillType ~= nil and otherUnit.fillType.index == currentFillType then
+                self.vehicle:setProcessorConfiguration(index)
+                return
+            end
+        end
+    end
 end

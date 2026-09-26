@@ -112,6 +112,10 @@ function MultisplitProcessor:getCanUseOutputs(litersToProcess)
             if output:getAvailableCapacity() < targetLiters then
                 return false
             end
+
+            if not output:getCanReceiveFillType() then
+                return false
+            end
         end
     end
 
