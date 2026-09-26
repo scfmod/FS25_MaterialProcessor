@@ -186,8 +186,52 @@ function ProcessorDialog:updateUnits()
     self.unitsList:reloadData()
 end
 
+--- Whether the player is currently allowed to apply a different configuration:
+--- not while auto-selection is enabled (it owns configuration switching), and not
+--- while the input fillUnit still has crop in it (switching would either desync the
+--- HUD/processing from what is actually in the tank, or previously caused it to be
+--- silently relabelled).
+---@return boolean
+---@nodiscard
+function ProcessorDialog:getCanApplyConfiguration()
+    -- autoSelectConfiguration is only ever implemented by SplitProcessor. Guard with
+    -- a duck-type check so a stray splitAutoSelectConfigurationEnabled="true" on a
+    -- Blend or Multisplit processor (neither of which have auto-select logic to take
+    -- over) can never permanently hide the Apply button with nothing actually
+    -- switching for it.
+    if self.processor.autoSelectConfiguration ~= nil and self.processor.splitAutoSelectConfigurationEnabled then
+        return false
+    end
+
+    local currentConfiguration = self.processor.currentConfiguration
+
+    if currentConfiguration == nil then
+        return true
+    end
+
+    local threshold = self.processor.autoDetectEmptyThreshold
+
+    -- Check every unit the configuration touches, not just getUnit()/getUnits():
+    -- that pair does not cover every unit for every configuration type -
+    -- MultisplitConfiguration in particular has multiple inputs, but getUnit() only
+    -- ever returns the first one. Switching should be blocked if any unit still has
+    -- material a different configuration might not agree on the fillType of.
+    for _, unit in pairs(currentConfiguration.fillUnitToConfigurationUnit) do
+        if unit:getFillLevel() > threshold then
+            return false
+        end
+    end
+
+    return true
+end
+
 ---@param index number | nil
 function ProcessorDialog:applyConfiguration(index)
+    if not self:getCanApplyConfiguration() then
+        self:close()
+        return
+    end
+
     index = index or self.list:getSelectedIndexInSection()
 
     local config = self.configurations[index]
@@ -206,6 +250,10 @@ function ProcessorDialog:updateMenuButtons()
         else
             self.toggleHudButton:setText(g_modGui.L10N_TEXTS.ENABLE_HUD)
         end
+    end
+
+    if self.applyButton ~= nil then
+        self.applyButton:setVisible(self:getCanApplyConfiguration())
     end
 end
 
