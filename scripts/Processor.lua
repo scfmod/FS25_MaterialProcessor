@@ -36,6 +36,8 @@ function Processor.registerXMLPaths(schema, key)
     schema:register(XMLValueType.BOOL, key .. '#canToggleDischargeToGround', 'Whether player can toggle discharge to ground or not', true)
     schema:register(XMLValueType.BOOL, key .. '#canDischargeToGroundAnywhere', 'Bypass land permissions when discharging to ground', false)
     schema:register(XMLValueType.BOOL, key .. '#canDischargeToAnyObject', 'Bypass vehicle permissions when discharging to object', false)
+    schema:register(XMLValueType.FLOAT, key .. '#autoDetectEmptyThreshold', 'Fill level (liters) at or below which the input fillUnit is considered empty for automatic configuration detection and fillType switching', 20)
+    schema:register(XMLValueType.BOOL, key .. '#splitAutoSelectConfigurationEnabled', 'Split processor only: automatically switch configuration to match the fillType currently in the input fillUnit', false)
 
     DischargeNode.registerXMLPaths(schema, key .. '.dischargeNodes.node(?)')
     Configuration.registerXMLPaths(schema, key .. '.configurations.configuration(?)')
@@ -76,6 +78,8 @@ function Processor.new(vehicle, customMt)
     self.canDischargeToGroundAnywhere = false
     self.canDischargeToGround = false
     self.canDischargeToAnyObject = false
+    self.autoDetectEmptyThreshold = 20
+    self.splitAutoSelectConfigurationEnabled = false
 
     return self
 end
@@ -108,6 +112,8 @@ function Processor:load(xmlFile, key)
     self.canDischargeToGroundAnywhere = xmlFile:getValue(key .. '#canDischargeToGroundAnywhere', self.canDischargeToGroundAnywhere)
     self.canDischargeToGround = self.defaultCanDischargeToGround
     self.canDischargeToAnyObject = xmlFile:getValue(key .. '#canDischargeToAnyObject', self.canDischargeToAnyObject)
+    self.autoDetectEmptyThreshold = xmlFile:getValue(key .. '#autoDetectEmptyThreshold', self.autoDetectEmptyThreshold)
+    self.splitAutoSelectConfigurationEnabled = xmlFile:getValue(key .. '#splitAutoSelectConfigurationEnabled', self.splitAutoSelectConfigurationEnabled)
 
     self:loadConfigurationEntries(xmlFile, key .. '.configurations.configuration')
 
@@ -218,6 +224,8 @@ function Processor:updateTick(dt)
 
     if self.isServer then
         if self.vehicle:getIsProcessingEnabled() then
+            self:updateConfigurationUnitFillTypes()
+
             if self:getCanProcess() then
                 self:handleProcessedLiters(self:process(dt))
             end
@@ -242,6 +250,58 @@ function Processor:getFillUnitIsActive(fillUnitIndex)
     end
 
     return false
+end
+
+--- activate() only runs once, at the moment a configuration is selected. If a unit
+--- still held more than autoDetectEmptyThreshold liters at that exact moment, it is
+--- left alone (by design, to avoid relabelling/mixing real material) - but nothing
+--- else ever re-checks it afterwards. If it is later emptied out (e.g. discharged),
+--- it would otherwise stay locked to its old fillType indefinitely, silently
+--- rejecting the current configuration's produce. This re-checks every unit the
+--- current configuration touches each tick and re-applies activate() to any whose
+--- actual fillType no longer matches, now that it is safe to do so.
+function Processor:updateConfigurationUnitFillTypes()
+    if not self.forceSetFillType and not self.forceSetSupportedFillTypes then
+        return
+    end
+
+    local configuration = self.currentConfiguration
+
+    if configuration == nil then
+        return
+    end
+
+    -- SplitProcessor manages its own primary (input) unit every tick with different,
+    -- wider semantics while auto-detection is enabled (accepting any configuration's
+    -- fillType while empty, not just the current one) - skip it here so this does not
+    -- fight with that and immediately re-narrow what it just widened.
+    local skipUnit = nil
+
+    if self.splitAutoSelectConfigurationEnabled then
+        skipUnit = configuration:getUnit()
+    end
+
+    -- Iterate fillUnitToConfigurationUnit rather than getUnit()/getUnits(): the latter
+    -- pair does not cover every unit for every configuration type - MultisplitConfiguration
+    -- in particular has multiple inputs, but getUnit() only ever returns the first one.
+    for _, unit in pairs(configuration.fillUnitToConfigurationUnit) do
+        if unit ~= skipUnit then
+            self:updateConfigurationUnitFillType(unit)
+        end
+    end
+end
+
+---@param unit ConfigurationUnit
+function Processor:updateConfigurationUnitFillType(unit)
+    if unit:getFillLevel() > self.autoDetectEmptyThreshold then
+        return
+    end
+
+    local currentFillType = self.vehicle:getFillUnitFillType(unit.fillUnit.fillUnitIndex)
+
+    if currentFillType ~= unit.fillType.index then
+        unit:activate()
+    end
 end
 
 ---@param xmlFile XMLFile

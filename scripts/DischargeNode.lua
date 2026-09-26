@@ -1051,6 +1051,34 @@ function DischargeNode:dischargeActivationTriggerCallback(triggerId, otherActorI
     end
 end
 
+---@param object table
+function DischargeNode:onDeleteDischargeTriggerObject(object)
+    local trigger = self.trigger
+
+    if trigger.objects[object] ~= nil then
+        trigger.objects[object] = nil
+        trigger.numObjects = trigger.numObjects - 1
+
+        if object == self.dischargeObject then
+            self.dischargeObject = nil
+            self.dischargeHitTerrain = false
+            self.dischargeShape = nil
+            self.dischargeDistance = 0
+            self.dischargeFillUnitIndex = nil
+        end
+    end
+end
+
+---@param object table
+function DischargeNode:onDeleteActivationTriggerObject(object)
+    local trigger = self.activationTrigger
+
+    if trigger.objects[object] ~= nil then
+        trigger.objects[object] = nil
+        trigger.numObjects = trigger.numObjects - 1
+    end
+end
+
 ---@param streamId number
 ---@param connection Connection
 function DischargeNode:writeStream(streamId, connection)

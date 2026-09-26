@@ -106,13 +106,15 @@ function ConfigurationUnit:load(xmlFile, key)
 end
 
 function ConfigurationUnit:activate()
-    if self.processor.forceSetSupportedFillTypes then
+    local isEmpty = self:getFillLevel() <= self.processor.autoDetectEmptyThreshold
+
+    if self.processor.forceSetSupportedFillTypes and isEmpty then
         self.fillUnit.supportedFillTypes = {}
         self.fillUnit.supportedFillTypes[self.fillType.index] = true
     end
 
     if self.vehicle.isServer then
-        if self.processor.forceSetFillType then
+        if self.processor.forceSetFillType and isEmpty then
             self.vehicle:setFillUnitFillType(self.fillUnit.fillUnitIndex, self.fillType.index)
         end
     end
@@ -145,6 +147,27 @@ end
 ---@nodiscard
 function ConfigurationUnit:getAvailableCapacity()
     return self.vehicle:getFillUnitFreeCapacity(self.fillUnit.fillUnitIndex) or 0
+end
+
+--- Whether this unit's fillUnit can actually accept this unit's declared fillType
+--- right now: true while empty (at or below autoDetectEmptyThreshold), or if it
+--- already holds that exact fillType. False if it holds a different, non-empty
+--- fillType — which activate() will not have relabelled away, so writing this
+--- unit's fillType into it would otherwise be silently rejected by the engine.
+---@return boolean
+---@nodiscard
+function ConfigurationUnit:getCanReceiveFillType()
+    if not self.processor.forceSetFillType then
+        return true
+    end
+
+    if self:getFillLevel() <= self.processor.autoDetectEmptyThreshold then
+        return true
+    end
+
+    local currentFillType = self.vehicle:getFillUnitFillType(self.fillUnit.fillUnitIndex)
+
+    return currentFillType == nil or currentFillType == FillType.UNKNOWN or currentFillType == self.fillType.index
 end
 
 ---@return number? node
