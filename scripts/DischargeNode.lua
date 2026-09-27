@@ -1011,6 +1011,22 @@ function DischargeNode:dischargeTriggerCallback(triggerId, otherActorId, onEnter
     end
 end
 
+function DischargeNode:onDeleteDischargeTriggerObject(object)
+    if object == self.dischargeObject then
+        self.dischargeObject = nil
+        self.dischargeHitTerrain = false
+        self.dischargeShape = nil
+        self.dischargeDistance = 0
+        self.dischargeFillUnitIndex = nil
+    end
+
+    local trigger = self.trigger
+    if trigger.objects[object] ~= nil then
+        trigger.objects[object] = nil
+        trigger.numObjects = trigger.numObjects - 1
+    end
+end
+
 ---@param triggerId number
 ---@param otherActorId number
 ---@param onEnter boolean
