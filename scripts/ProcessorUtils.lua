@@ -88,7 +88,7 @@ function ProcessorUtils.loadDischargeEffects(dischargeNode, xmlFile, key)
     dischargeNode.animationResetSpeed = xmlFile:getValue(key .. ".animation#resetSpeed", 1)
 
     if dischargeNode.isClient then
-        dischargeNode.playSound = xmlFile:getValue(key .. '#playSound')
+        dischargeNode.playSound = xmlFile:getValue(key .. '#playSound', true)
         dischargeNode.soundNode = xmlFile:getValue(key .. '#soundNode', nil, dischargeNode.vehicle.components, dischargeNode.vehicle.i3dMappings)
 
         if dischargeNode.playSound then
